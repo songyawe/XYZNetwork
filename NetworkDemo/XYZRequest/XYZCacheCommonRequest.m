@@ -29,7 +29,6 @@
         cookie = [cookie stringByReplacingOccurrencesOfString:@"," withString:@";"];
         [mDic setValue:cookie forKey:@"Cookie"];
     }
-    
     return [mDic copy];
 }
 

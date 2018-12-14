@@ -7,39 +7,17 @@
 //
 
 #import "XYZCommonRequest.h"
-@interface XYZCommonRequest(){
-    /**请求url*/
-    NSString *_urlString;
-    /**请求方式*/
-    XYZRequestType _requestType;
-}
-
-@end
 @implementation XYZCommonRequest
 
 + (instancetype)XYZ_requestWithUrl:(NSString *)urlString requestType:(XYZRequestType)requestType{
     XYZCommonRequest *commonR = [[self alloc]init];
-    commonR -> _urlString = urlString;
-    commonR -> _requestType = requestType;
+    commonR.requestUrl = urlString;
+    commonR.requestMethod = requestType;
+    commonR.requestTimeoutInterval = 10;
     return commonR;
 }
 
-- (XYZRequestType)requestMethod {
-    return _requestType;
-}
-
-- (NSString *)requestUrl {
-    return _urlString;
-}
-//超时10秒
-- (NSTimeInterval)requestTimeoutInterval {
-    return 10;
-}
-
-- (id)parames {
-    return self.requestParames;
-}
-
+//设置附加请求头
 - (NSDictionary *)requestHeaderFieldValueDictionary {
 
     NSMutableDictionary *mDic = [NSMutableDictionary dictionary];

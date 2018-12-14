@@ -38,7 +38,7 @@ static dispatch_queue_t XYZCacheRequest_cache_writing_queue() {
 @property (nonatomic, assign) long long version;
 @property (nonatomic, assign) NSStringEncoding stringEncoding;
 @property (nonatomic, strong) NSDate *creationDate;
-@property (nonatomic, strong) NSString *appVersionString;
+@property (nonatomic, copy) NSString *appVersionString;
 
 @end
 
@@ -74,7 +74,7 @@ static dispatch_queue_t XYZCacheRequest_cache_writing_queue() {
 @interface XYZCacheRequest()
 
 @property (nonatomic, strong) NSData *cacheData;
-@property (nonatomic, strong) NSString *cacheString;
+@property (nonatomic, copy) NSString *cacheString;
 @property (nonatomic, strong) id cacheJSON;
 @property (nonatomic, strong) NSXMLParser *cacheXML;
 
@@ -84,6 +84,17 @@ static dispatch_queue_t XYZCacheRequest_cache_writing_queue() {
 @end
 
 @implementation XYZCacheRequest
+
+- (instancetype)init{
+    if (self = [super init]) {
+        //默认参数
+        _useCacheType = XYZCacheTypeNET;
+        _writeCacheAsynchronously = YES;
+        _cacheTimeInSeconds = 60 * 60 * 24 * 7;
+        _cacheVersion = 0;
+    }
+    return self;
+}
 
 - (void)start {
     if (self.useCacheType == XYZCacheTypeNET) {
@@ -118,14 +129,10 @@ static dispatch_queue_t XYZCacheRequest_cache_writing_queue() {
                 if (strongSelf.successCompletionBlock) {
                     strongSelf.successCompletionBlock(strongSelf);
                 }
-                [self startWithoutCache];
             });
-            
+          }
+         [self startWithoutCache];
         }
-        
-    }
-
-  
 }
 
 - (void)startWithoutCache {
@@ -147,25 +154,7 @@ static dispatch_queue_t XYZCacheRequest_cache_writing_queue() {
     }
 }
 
-#pragma mark - Subclass Override
-
-- (NSInteger)cacheTimeInSeconds {
-    return 60 * 60 * 24 * 7;
-}
-
-- (long long)cacheVersion {
-    return 0;
-}
-
-- (BOOL)writeCacheAsynchronously {
-    return YES;
-}
-
 #pragma mark -
-
-- (XYZCacheType)useCacheType{
-    return XYZCacheTypeNET;
-}
 
 - (BOOL)isDataFromCache {
     return _dataFromCache;
@@ -377,7 +366,7 @@ static dispatch_queue_t XYZCacheRequest_cache_writing_queue() {
 - (NSString *)cacheFileName {
     NSString *requestUrl = [self requestUrl];
     NSString *baseUrl = [XYZNetworkConfig sharedConfig].baseUrl;
-    id argument = [self cacheFileNameFilterForParames:[self parames]];
+    id argument = [self cacheFileNameFilterForParames:[self requestParames]];
     NSString *requestInfo = [NSString stringWithFormat:@"Method:%ld Host:%@ Url:%@ Argument:%@",
                              (long)[self requestMethod], baseUrl, requestUrl, argument];
     NSString *cacheFileName = [XYZNetworkUtils md5StringFromString:requestInfo];

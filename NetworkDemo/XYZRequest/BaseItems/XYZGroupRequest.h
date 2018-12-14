@@ -46,7 +46,6 @@ NS_ASSUME_NONNULL_BEGIN
 //置空block,防止循环引用.
 - (void)clearCompletionBlock;
 
-
 //开启请求组访问
 - (void)start;
 

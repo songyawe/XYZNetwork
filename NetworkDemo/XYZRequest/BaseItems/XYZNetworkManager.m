@@ -135,7 +135,7 @@
 - (NSURLSessionTask *)sessionTaskForRequest:(XYZBaseRequest *)request error:(NSError * _Nullable __autoreleasing *)error {
     XYZRequestType method = [request requestMethod];
     NSString *url = [self buildRequestUrl:request];
-    id param = request.parames;
+    id param = request.requestParames;
     AFConstructingBlock constructingBlock = [request constructingBodyBlock];
     AFHTTPRequestSerializer *requestSerializer = [self requestSerializerForRequest:request];
 

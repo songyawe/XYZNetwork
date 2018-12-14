@@ -7,43 +7,18 @@
 //
 
 #import "XYZCacheCommonRequest.h"
-@interface XYZCacheCommonRequest(){
-    /**请求url*/
-    NSString *_urlString;
-    /**请求方式*/
-    XYZRequestType _requestType;
-}
 
-@end
 @implementation XYZCacheCommonRequest
 
-+ (instancetype)XYZ_requestWithUrl:(NSString *)urlString requestType:(XYZRequestType)requestType{
++ (instancetype)XYZ_requestWithUrl:(NSString *)urlString requestType:(XYZRequestType)requestType useCacheType:(XYZCacheType)cacheType{
     XYZCacheCommonRequest *commonR = [[self alloc]init];
-    commonR -> _urlString = urlString;
-    commonR -> _requestType = requestType;
+    commonR.requestUrl = urlString;
+    commonR.requestMethod = requestType;
+    commonR.useCacheType = cacheType;
+    commonR.requestTimeoutInterval = 10;
     return commonR;
 }
-
-- (XYZRequestType)requestMethod {
-    return _requestType;
-}
-
-- (NSString *)requestUrl {
-    return _urlString;
-}
-//超时10秒
-- (NSTimeInterval)requestTimeoutInterval {
-    return 10;
-}
-
-- (XYZCacheType)useCacheType{
-    return XYZCacheTypeCACHEANDNET;
-}
-
-- (id)parames {
-    return self.requestParames;
-}
-
+//设置附加请求头
 - (NSDictionary *)requestHeaderFieldValueDictionary {
     
     NSMutableDictionary *mDic = [NSMutableDictionary dictionary];

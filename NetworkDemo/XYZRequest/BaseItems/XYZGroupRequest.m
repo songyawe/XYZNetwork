@@ -11,11 +11,6 @@
 #import "XYZNetworkUtils.h"
 #import "XYZBaseRequest.h"
 
-@interface XYZGroupRequest()
-
-
-@end
-
 @implementation XYZGroupRequest
 
 - (instancetype)initWithRequestArray:(NSArray<XYZBaseRequest *> *)requestArray {

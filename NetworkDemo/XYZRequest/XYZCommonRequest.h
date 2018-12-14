@@ -13,13 +13,13 @@ NS_ASSUME_NONNULL_BEGIN
 @interface XYZCommonRequest : XYZBaseRequest
 
 /**
-普通网络请求方式
- */
+ * 普通网络请求方式
+ *
+ *@param urlString   请求路径.
+ *@param requestType 请求方式
+ *@return return     返回实例化对象
+*/
 + (instancetype)XYZ_requestWithUrl:(NSString *)urlString requestType:(XYZRequestType)requestType;
-/**
- 请求参数
- */
-@property (nonatomic,copy) NSDictionary *requestParames;
 
 @end
 

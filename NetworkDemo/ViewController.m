@@ -94,7 +94,7 @@
 //带缓存的网络请求
 - (void)cacheLogin{
     
-    XYZCacheCommonRequest *request = [XYZCacheCommonRequest XYZ_requestWithUrl:@"/app/auth/signin" requestType:XYZRequestTypePOST];
+    XYZCacheCommonRequest *request = [XYZCacheCommonRequest XYZ_requestWithUrl:@"/app/auth/signin" requestType:XYZRequestTypePOST useCacheType:XYZCacheTypeCACHEANDNET];
     request.requestParames = @{
                                @"client":@"primary",
                                @"code":@"1614",

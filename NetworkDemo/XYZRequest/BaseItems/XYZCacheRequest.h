@@ -30,6 +30,19 @@ NS_ENUM(NSInteger) {
 
 //带缓存的网络请求
 @interface XYZCacheRequest : XYZBaseRequest
+#pragma mark - 参数相关
+
+//选择加载数据的方式
+@property(nonatomic, readwrite) XYZCacheType useCacheType;
+//缓存版本默认为0
+@property(nonatomic, readwrite) long cacheVersion;
+//缓存时间（秒），默认7天，在加载方式不为XYZCacheTypeNET有效，设置大于0的数值有效
+@property(nonatomic, readwrite) NSInteger cacheTimeInSeconds;
+//是否异步写入缓存,默认是异步
+@property(nonatomic, readwrite) BOOL writeCacheAsynchronously;
+
+#pragma mark - 方法相关
+
 
 //数据是否来自缓存
 - (BOOL)isDataFromCache;
@@ -40,22 +53,9 @@ NS_ENUM(NSInteger) {
 //不加载缓存直接请求网络
 - (void)startWithoutCache;
 
-//选择加载数据的方式
-- (XYZCacheType)useCacheType;
-
 //缓存需要保存的数据
 - (void)saveResponseDataToCacheFile:(NSData *)data;
 
-#pragma mark - Subclass Override
-
-//缓存时间（秒），默认7天，在加载方式不为XYZCacheTypeNET有效，设置大于0的数值有效
-- (NSInteger)cacheTimeInSeconds;
-
-//缓存版本默认为0
-- (long long)cacheVersion;
-
-//是否异步写入缓存
-- (BOOL)writeCacheAsynchronously;
 //缓存基路径
 - (NSString *)cacheBasePath;
 

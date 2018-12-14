@@ -14,8 +14,19 @@
 
 @implementation XYZBaseRequest
 
+- (instancetype)init{
+    if (self = [super init]) {
+        //默认参数
+        _requestTimeoutInterval = 60;
+        _requestMethod = XYZRequestTypeGET;
+        _requestSerializerType = XYZRequestSerializerTypeHTTP;
+        _responseSerializerType = XYZResponseSerializerTypeJSON;
+        _allowsCellularAccess = YES;
+    }
+    return self;
+}
 
-#pragma mark - Request Configuration
+#pragma mark - 设置请求成功失败block
 
 - (void)setCompletionBlockWithSuccess:(XYZRequestCompletionBlock)success
                               failure:(XYZRequestCompletionBlock)failure {
@@ -28,7 +39,7 @@
     self.failureCompletionBlock = nil;
 }
 
-#pragma mark - Request Action
+#pragma mark - 请求类相关方法
 
 - (void)start {
     [[XYZNetworkManager sharedManager] addRequest:self];
@@ -44,7 +55,7 @@
     [self start];
 }
 
-#pragma mark - Subclass Override
+#pragma mark - 子类中用到需要覆盖
 
 - (void)requestCompletePreprocessor {
 }
@@ -57,37 +68,9 @@
 
 - (void)requestFailedFilter {
 }
-//设置请求路径时覆盖
-- (NSString *)requestUrl {
-    return @"";
-}
-//设置根URL时覆盖
-- (NSString *)baseUrl {
-    return @"";
-}
-//设置超时时覆盖
-- (NSTimeInterval)requestTimeoutInterval {
-    return 60;
-}
-//设置请求参数时覆盖
-- (id)parames {
-    return nil;
-}
 
 - (id)cacheFileNameFilterForParames:(id)parames {
     return parames;
-}
-
-- (XYZRequestType)requestMethod {
-    return XYZRequestTypeGET;
-}
-
-- (XYZRequestSerializerType)requestSerializerType {
-    return XYZRequestSerializerTypeHTTP;
-}
-
-- (XYZResponseSerializerType)responseSerializerType {
-    return XYZResponseSerializerTypeJSON;
 }
 
 - (NSArray *)requestAuthorizationHeaderFieldArray {
@@ -100,10 +83,6 @@
 
 - (NSURLRequest *)buildCustomUrlRequest {
     return nil;
-}
-
-- (BOOL)allowsCellularAccess {
-    return YES;
 }
 
 - (BOOL)statusCodeValidator {

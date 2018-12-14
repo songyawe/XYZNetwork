@@ -25,7 +25,7 @@
     AFJSONResponseSerializer *_jsonResponseSerializer;
     AFXMLParserResponseSerializer *_xmlParserResponseSerialzier;
     NSMutableDictionary<NSNumber *, XYZBaseRequest *> *_requestsRecord;
-
+    
     dispatch_queue_t _processingQueue;
     pthread_mutex_t _lock;
     NSIndexSet *_allStatusCodes;
@@ -49,7 +49,7 @@
         _processingQueue = dispatch_queue_create("queue_XYZ_net", DISPATCH_QUEUE_CONCURRENT);
         _allStatusCodes = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(100, 500)];
         pthread_mutex_init(&_lock, NULL);
-
+        
         _manager.securityPolicy = _config.securityPolicy;
         _manager.responseSerializer = [AFHTTPResponseSerializer serializer];
         _manager.responseSerializer.acceptableStatusCodes = _allStatusCodes;
@@ -62,7 +62,7 @@
     if (!_jsonResponseSerializer) {
         _jsonResponseSerializer = [AFJSONResponseSerializer serializer];
         _jsonResponseSerializer.acceptableStatusCodes = _allStatusCodes;
-
+        
     }
     return _jsonResponseSerializer;
 }
@@ -79,27 +79,27 @@
 
 - (NSString *)buildRequestUrl:(XYZBaseRequest *)request {
     NSParameterAssert(request != nil);
-
+    
     NSString *detailUrl = [request requestUrl];
     NSURL *temp = [NSURL URLWithString:detailUrl];
-
+    
     if (temp && temp.host && temp.scheme) {
         return detailUrl;
     }
-
+    
     NSString *baseUrl;
     if ([request baseUrl].length > 0) {
         baseUrl = [request baseUrl];
     } else {
         baseUrl = [_config baseUrl];
     }
-
+    
     NSURL *url = [NSURL URLWithString:baseUrl];
-
+    
     if (baseUrl.length > 0 && ![baseUrl hasSuffix:@"/"]) {
         url = [url URLByAppendingPathComponent:@""];
     }
-
+    
     return [NSURL URLWithString:detailUrl relativeToURL:url].absoluteString;
 }
 
@@ -110,18 +110,18 @@
     } else if (request.requestSerializerType == XYZRequestSerializerTypeJSON) {
         requestSerializer = [AFJSONRequestSerializer serializer];
     }
-
+    
     requestSerializer.timeoutInterval = [request requestTimeoutInterval];
     requestSerializer.allowsCellularAccess = [request allowsCellularAccess];
-
-
+    
+    
     NSArray<NSString *> *authorizationHeaderFieldArray = [request requestAuthorizationHeaderFieldArray];
     if (authorizationHeaderFieldArray != nil) {
         [requestSerializer setAuthorizationHeaderFieldWithUsername:authorizationHeaderFieldArray.firstObject
                                                           password:authorizationHeaderFieldArray.lastObject];
     }
-
-
+    
+    
     NSDictionary<NSString *, NSString *> *headerFieldValueDictionary = [request requestHeaderFieldValueDictionary];
     if (headerFieldValueDictionary != nil) {
         for (NSString *httpHeaderField in headerFieldValueDictionary.allKeys) {
@@ -138,7 +138,7 @@
     id param = request.requestParames;
     AFConstructingBlock constructingBlock = [request constructingBodyBlock];
     AFHTTPRequestSerializer *requestSerializer = [self requestSerializerForRequest:request];
-
+    
     switch (method) {
         case XYZRequestTypeGET:
             if (request.downloadPath) {
@@ -161,9 +161,9 @@
 
 - (void)addRequest:(XYZBaseRequest *)request {
     NSParameterAssert(request != nil);
-
+    
     NSError * __autoreleasing requestSerializationError = nil;
-
+    
     NSURLRequest *customUrlRequest= [request buildCustomUrlRequest];
     if (customUrlRequest) {
         __block NSURLSessionDataTask *dataTask = nil;
@@ -174,14 +174,14 @@
     } else {
         request.requestTask = [self sessionTaskForRequest:request error:&requestSerializationError];
     }
-
+    
     if (requestSerializationError) {
         [self requestDidFailWithRequest:request error:requestSerializationError];
         return;
     }
-
+    
     NSAssert(request.requestTask != nil, @"requestTask should not be nil");
-
+    
     if ([request.requestTask respondsToSelector:@selector(priority)]) {
         switch (request.requestPriority) {
             case XYZRequestPriorityHigh:
@@ -196,14 +196,14 @@
                 break;
         }
     }
-    XYZLog(@"Add request: %@", NSStringFromClass([request class]));
+    XYZLog(@"Add request: %@", request.requestUrl);
     [self addRequestToRecord:request];
     [request.requestTask resume];
 }
 
 - (void)cancelRequest:(XYZBaseRequest *)request {
     NSParameterAssert(request != nil);
-
+    
     if (request.downloadPath) {
         NSURLSessionDownloadTask *requestTask = (NSURLSessionDownloadTask *)request.requestTask;
         [requestTask cancelByProducingResumeData:^(NSData *resumeData) {
@@ -213,7 +213,7 @@
     } else {
         [request.requestTask cancel];
     }
-
+    
     [self removeRequestFromRecord:request];
     [request clearCompletionBlock];
 }
@@ -237,26 +237,26 @@
     Lock();
     XYZBaseRequest *request = _requestsRecord[@(task.taskIdentifier)];
     Unlock();
-
+    
     if (!request) {
         return;
     }
-
-    XYZLog(@"Finished Request: %@", NSStringFromClass([request class]));
-
+    
+    XYZLog(@"Finished Request: %@", request.requestUrl);
+    
     NSError * __autoreleasing serializationError = nil;
-
+    
     NSError *requestError = nil;
     BOOL succeed = YES;
-
+    
     request.responseObject = responseObject;
     if ([request.responseObject isKindOfClass:[NSData class]]) {
         request.responseData = responseObject;
         request.responseString = [[NSString alloc] initWithData:responseObject encoding:[XYZNetworkUtils stringEncodingWithRequest:request]];
-
+        
         switch (request.responseSerializerType) {
             case XYZResponseSerializerTypeHTTP:
-
+                
                 break;
             case XYZResponseSerializerTypeJSON:
                 request.responseObject = [self.jsonResponseSerializer responseObjectForResponse:task.response data:request.responseData error:&serializationError];
@@ -274,13 +274,13 @@
         succeed = NO;
         requestError = serializationError;
     }
-
+    
     if (succeed) {
         [self requestDidSucceedWithRequest:request];
     } else {
         [self requestDidFailWithRequest:request error:requestError];
     }
-
+    
     dispatch_async(dispatch_get_main_queue(), ^{
         [self removeRequestFromRecord:request];
         [request clearCompletionBlock];
@@ -296,35 +296,35 @@
         if (request.downloadPath) {
             [[NSFileManager defaultManager] removeItemAtURL:[self incompleteDownloadTempPathForDownloadPath:request.downloadPath] error:nil];
         }
-
+        
         if (request.successCompletionBlock) {
             request.successCompletionBlock(request);
         }
-
+        
     });
 }
 
 - (void)requestDidFailWithRequest:(XYZBaseRequest *)request error:(NSError *)error {
     request.error = error;
-    XYZLog(@"Request %@ failed, status code = %ld, error = %@",
-           NSStringFromClass([request class]), (long)request.responseStatusCode, error.localizedDescription);
-
+    XYZLog(@"Request failed:%@ , status code = %ld, error = %@",
+           request.requestUrl, (long)request.responseStatusCode, error.localizedDescription);
+    
     NSData *incompleteDownloadData = error.userInfo[NSURLSessionDownloadTaskResumeData];
     if (incompleteDownloadData) {
         [incompleteDownloadData writeToURL:[self incompleteDownloadTempPathForDownloadPath:request.downloadPath] atomically:YES];
     }
-
+    
     if ([request.responseObject isKindOfClass:[NSURL class]]) {
         NSURL *url = request.responseObject;
         if (url.isFileURL && [[NSFileManager defaultManager] fileExistsAtPath:url.path]) {
             request.responseData = [NSData dataWithContentsOfURL:url];
             request.responseString = [[NSString alloc] initWithData:request.responseData encoding:[XYZNetworkUtils stringEncodingWithRequest:request]];
-
+            
             [[NSFileManager defaultManager] removeItemAtURL:url error:nil];
         }
         request.responseObject = nil;
     }
-
+    
     @autoreleasepool {
         [request requestFailedPreprocessor];
     }
@@ -345,7 +345,6 @@
 - (void)removeRequestFromRecord:(XYZBaseRequest *)request {
     Lock();
     [_requestsRecord removeObjectForKey:@(request.requestTask.taskIdentifier)];
-    XYZLog(@"Request queue size = %zd", [_requestsRecord count]);
     Unlock();
 }
 
@@ -366,20 +365,20 @@
                        constructingBodyWithBlock:(nullable void (^)(id <AFMultipartFormData> formData))block
                                            error:(NSError * _Nullable __autoreleasing *)error {
     NSMutableURLRequest *request = nil;
-
+    
     if (block) {
         request = [requestSerializer multipartFormRequestWithMethod:method URLString:URLString parameters:parameters constructingBodyWithBlock:block error:error];
     } else {
         request = [requestSerializer requestWithMethod:method URLString:URLString parameters:parameters error:error];
     }
-
+    
     __block NSURLSessionDataTask *dataTask = nil;
     
     dataTask = [_manager dataTaskWithRequest:request uploadProgress:nil downloadProgress:nil completionHandler:^(NSURLResponse * _Nonnull response, id  _Nullable responseObject, NSError * _Nullable _error) {
         [self handleRequestResult:dataTask responseObject:responseObject error:_error];
     }];
     
-
+    
     return dataTask;
 }
 
@@ -390,7 +389,7 @@
                                                   progress:(nullable void (^)(NSProgress *downloadProgress))downloadProgressBlock
                                                      error:(NSError * _Nullable __autoreleasing *)error {
     NSMutableURLRequest *urlRequest = [requestSerializer requestWithMethod:@"GET" URLString:URLString parameters:parameters error:error];
-
+    
     NSString *createPath = downloadPath;
     NSString *extension = [downloadPath pathExtension];
     NSString *downloadTargetPath;
@@ -413,7 +412,7 @@
     BOOL resumeDataFileExists = [[NSFileManager defaultManager] fileExistsAtPath:[self incompleteDownloadTempPathForDownloadPath:downloadPath].path];
     NSData *data = [NSData dataWithContentsOfURL:[self incompleteDownloadTempPathForDownloadPath:downloadPath]];
     BOOL resumeDataIsValid = [XYZNetworkUtils validateResumeData:data];
-
+    
     BOOL canBeResumed = resumeDataFileExists && resumeDataIsValid;
     BOOL resumeSucceeded = NO;
     __block NSURLSessionDownloadTask *downloadTask = nil;
@@ -446,12 +445,12 @@
 - (NSString *)incompleteDownloadTempCacheFolder {
     NSFileManager *fileManager = [NSFileManager new];
     static NSString *cacheFolder;
-
+    
     if (!cacheFolder) {
         NSString *cacheDir = NSTemporaryDirectory();
         cacheFolder = [cacheDir stringByAppendingPathComponent:kXYZNetworkDownloadingFolderName];
     }
-
+    
     NSError *error = nil;
     if(![fileManager createDirectoryAtPath:cacheFolder withIntermediateDirectories:YES attributes:nil error:&error]) {
         XYZLog(@"Failed to create cache directory at %@", cacheFolder);
@@ -468,17 +467,17 @@
 }
 
 - (void)createDirectoryAtPath:(NSString *)path {
-       if (![[NSFileManager defaultManager] fileExistsAtPath:path]) {
-           NSError *error = nil;
-           [[NSFileManager defaultManager] createDirectoryAtPath:path withIntermediateDirectories:YES
-                                                      attributes:nil error:&error];
-           if (error) {
-               XYZLog(@"create cache directory failed, error = %@", error);
-           } else {
-               //禁止icloud备份
-               [XYZNetworkUtils addDoNotBackupAttribute:path];
-           }
-       }
+    if (![[NSFileManager defaultManager] fileExistsAtPath:path]) {
+        NSError *error = nil;
+        [[NSFileManager defaultManager] createDirectoryAtPath:path withIntermediateDirectories:YES
+                                                   attributes:nil error:&error];
+        if (error) {
+            XYZLog(@"create cache directory failed, error = %@", error);
+        } else {
+            //禁止icloud备份
+            [XYZNetworkUtils addDoNotBackupAttribute:path];
+        }
+    }
 }
 
 #pragma mark - AFN

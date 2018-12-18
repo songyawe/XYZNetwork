@@ -31,8 +31,8 @@ typedef enum : NSUInteger {
 @property (nonatomic, assign) Gender gender;
 @property (nonatomic, strong) NSString *birthday;
 @property (nonatomic, strong) NSString *welcomeStatus;
-@property (nonatomic, assign) BOOL canAppoint;
-@property (nonatomic, assign) BOOL todayCourseStatus;
+@property (nonatomic, assign, getter = isCanAppoint) BOOL canAppoint;
+@property (nonatomic, assign, getter = isTodayCourseStatus) BOOL todayCourseStatus;
 @property (nonatomic, assign) CourseType course;
 @property (nonatomic, strong) NSString *avatar;
 @property (nonatomic, strong) NSString *thumb;

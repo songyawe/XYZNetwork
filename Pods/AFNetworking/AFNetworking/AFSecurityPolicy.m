@@ -1,24 +1,5 @@
 // AFSecurityPolicy.m
 // Copyright (c) 2011–2016 Alamofire Software Foundation ( http://alamofire.org/ )
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-
 #import "AFSecurityPolicy.h"
 
 #import <AssertMacros.h>
@@ -47,21 +28,30 @@ static BOOL AFSecKeyIsEqualToKey(SecKeyRef key1, SecKeyRef key2) {
     return [AFSecKeyGetData(key1) isEqual:AFSecKeyGetData(key2)];
 #endif
 }
-
+/*在证书中获取公钥*/
 static id AFPublicKeyForCertificate(NSData *certificate) {
     id allowedPublicKey = nil;
     SecCertificateRef allowedCertificate;
     SecPolicyRef policy = nil;
     SecTrustRef allowedTrust = nil;
     SecTrustResultType result;
-
+    // 根据二进制的certificate生成SecCertificateRef类型的证书
+    // NSData *certificate 通过CoreFoundation (__bridge CFDataRef)转换成 CFDataRef
+    // 看下边的这个方法就可以知道需要传递参数的类型
+    /*
+            SecCertificateRef SecCertificateCreateWithData(CFAllocatorRef __nullable allocator,
+            CFDataRef data) __OSX_AVAILABLE_STARTING(__MAC_10_6, __IPHONE_2_0);
+    */
     allowedCertificate = SecCertificateCreateWithData(NULL, (__bridge CFDataRef)certificate);
+    //如果allowedCertificate为空，则执行标记_out后边的代码
     __Require_Quiet(allowedCertificate != NULL, _out);
-
+    //  新建policy为X.509
     policy = SecPolicyCreateBasicX509();
+   //创建SecTrustRef对象，如果出错就跳到_out标记处
     __Require_noErr_Quiet(SecTrustCreateWithCertificates(allowedCertificate, policy, &allowedTrust), _out);
+    //校验证书的过程，这个不是异步的。
     __Require_noErr_Quiet(SecTrustEvaluate(allowedTrust, &result), _out);
-
+    //在SecTrustRef对象中取出公钥
     allowedPublicKey = (__bridge_transfer id)SecTrustCopyPublicKey(allowedTrust);
 
 _out:

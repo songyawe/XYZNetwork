@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) AFSecurityPolicy *securityPolicy;
 
 // 是否记录调试信息，默认是 NO
-@property (nonatomic) BOOL debugLogEnabled;
+@property (nonatomic, getter = isDebugLogEnabled) BOOL debugLogEnabled;
 
 // 用来初始化 AFHTTPSessionManager,默认是 nil
 @property (nonatomic, strong) NSURLSessionConfiguration* sessionConfiguration;

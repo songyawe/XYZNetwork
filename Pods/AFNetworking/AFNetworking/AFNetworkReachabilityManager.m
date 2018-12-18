@@ -1,38 +1,22 @@
 // AFNetworkReachabilityManager.m
 // Copyright (c) 2011–2016 Alamofire Software Foundation ( http://alamofire.org/ )
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
 
 #import "AFNetworkReachabilityManager.h"
 #if !TARGET_OS_WATCH
-
+//这几个头文件是系统库，是为了后边的 sockaddr_in6 / sockaddr_in 准备的
 #import <netinet/in.h>
 #import <netinet6/in6.h>
 #import <arpa/inet.h>
 #import <ifaddrs.h>
 #import <netdb.h>
 
+//网络变化接收通知
 NSString * const AFNetworkingReachabilityDidChangeNotification = @"com.alamofire.networking.reachability.change";
 NSString * const AFNetworkingReachabilityNotificationStatusItem = @"AFNetworkingReachabilityNotificationStatusItem";
-
+//网络变化回调
 typedef void (^AFNetworkReachabilityStatusBlock)(AFNetworkReachabilityStatus status);
 
+//枚举转换字符串
 NSString * AFStringFromNetworkReachabilityStatus(AFNetworkReachabilityStatus status) {
     switch (status) {
         case AFNetworkReachabilityStatusNotReachable:
@@ -46,12 +30,24 @@ NSString * AFStringFromNetworkReachabilityStatus(AFNetworkReachabilityStatus sta
             return NSLocalizedStringFromTable(@"Unknown", @"AFNetworking", nil);
     }
 }
-
+/** 根据SCNetworkReachabilityFlags这个网络标记来转换成我们在开发中经常使用的网络状态。很多框架中都会把一个类中的私有方法写成这样。
+    这样的c函数。
+     1. 在文件的最前方，比较容易查找
+     2. 可以适当的使用内联函数，提高效率。*/
 static AFNetworkReachabilityStatus AFNetworkReachabilityStatusForFlags(SCNetworkReachabilityFlags flags) {
+    // 是否能够到达
     BOOL isReachable = ((flags & kSCNetworkReachabilityFlagsReachable) != 0);
+    
+    // 在联网之前需要建立连接
     BOOL needsConnection = ((flags & kSCNetworkReachabilityFlagsConnectionRequired) != 0);
+    
+    // 是否可以自动连接
     BOOL canConnectionAutomatically = (((flags & kSCNetworkReachabilityFlagsConnectionOnDemand ) != 0) || ((flags & kSCNetworkReachabilityFlagsConnectionOnTraffic) != 0));
+    
+    // 是否可以连接，在不需要用户手动设置的前提下
     BOOL canConnectWithoutUserInteraction = (canConnectionAutomatically && (flags & kSCNetworkReachabilityFlagsInterventionRequired) == 0);
+    
+    // 是否可以联网的条件 1.能够到达 2.不需要建立连接或者不需要用户手动设置连接 就表示能够连接到网络
     BOOL isNetworkReachable = (isReachable && (!needsConnection || canConnectWithoutUserInteraction));
 
     AFNetworkReachabilityStatus status = AFNetworkReachabilityStatusUnknown;
@@ -70,14 +66,7 @@ static AFNetworkReachabilityStatus AFNetworkReachabilityStatusForFlags(SCNetwork
     return status;
 }
 
-/**
- * Queue a status change notification for the main thread.
- *
- * This is done to ensure that the notifications are received in the same order
- * as they are sent. If notifications are sent directly, it is possible that
- * a queued notification (for an earlier status condition) is processed after
- * the later update, resulting in the listener being left in the wrong state.
- */
+/**根据一个标识 来处理Block和通知。保证两者同一状态。*/
 static void AFPostReachabilityStatusChange(SCNetworkReachabilityFlags flags, AFNetworkReachabilityStatusBlock block) {
     AFNetworkReachabilityStatus status = AFNetworkReachabilityStatusForFlags(flags);
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -123,16 +112,7 @@ static void AFNetworkReachabilityReleaseCallback(const void *info) {
     return _sharedManager;
 }
 
-+ (instancetype)managerForDomain:(NSString *)domain {
-    SCNetworkReachabilityRef reachability = SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, [domain UTF8String]);
-
-    AFNetworkReachabilityManager *manager = [[self alloc] initWithReachability:reachability];
-    
-    CFRelease(reachability);
-
-    return manager;
-}
-
+/*通过一个socket地址来初始化。 首先新建 SCNetworkReachabilityRef 对象，然后调用initWithReachability: 方法。记得手动管理内存*/
 + (instancetype)managerForAddress:(const void *)address {
     SCNetworkReachabilityRef reachability = SCNetworkReachabilityCreateWithAddress(kCFAllocatorDefault, (const struct sockaddr *)address);
     AFNetworkReachabilityManager *manager = [[self alloc] initWithReachability:reachability];
@@ -141,7 +121,21 @@ static void AFNetworkReachabilityReleaseCallback(const void *info) {
     
     return manager;
 }
-
+/*这个方法基本同上。
+ 综合上边两个方法，我们发现 SCNetworkReachabilityRef 有两个创建方法：
+ 1. SCNetworkReachabilityCreateWithName
+ 2. SCNetworkReachabilityCreateWithAddress
+ */
++ (instancetype)managerForDomain:(NSString *)domain {
+    SCNetworkReachabilityRef reachability = SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, [domain UTF8String]);
+    
+    AFNetworkReachabilityManager *manager = [[self alloc] initWithReachability:reachability];
+    
+    CFRelease(reachability);
+    
+    return manager;
+}
+/*由于IPv6 是ios9和os_x 10.11后边推出的，所有要进行版本判断。*/
 + (instancetype)manager
 {
 #if (defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && __IPHONE_OS_VERSION_MIN_REQUIRED >= 90000) || (defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 101100)
@@ -158,6 +152,9 @@ static void AFNetworkReachabilityReleaseCallback(const void *info) {
     return [self managerForAddress:&address];
 }
 
+/*
+ 来看这个最基本的初始化方法，初始化了自身的属性。CFRetain()后要记得CFRelease().
+ */
 - (instancetype)initWithReachability:(SCNetworkReachabilityRef)reachability {
     self = [super init];
     if (!self) {
@@ -219,11 +216,15 @@ static void AFNetworkReachabilityReleaseCallback(const void *info) {
         }
 
     };
-
+//设置网络监控分为下边几个步骤：
+    //1.我们先新建上下文
     SCNetworkReachabilityContext context = {0, (__bridge void *)callback, AFNetworkReachabilityRetainCallback, AFNetworkReachabilityReleaseCallback, NULL};
+    //2.设置回调
     SCNetworkReachabilitySetCallback(self.networkReachability, AFNetworkReachabilityCallback, &context);
-    SCNetworkReachabilityScheduleWithRunLoop(self.networkReachability, CFRunLoopGetMain(), kCFRunLoopCommonModes);
+   //3.加入RunLoop池 步骤完成
+ SCNetworkReachabilityScheduleWithRunLoop(self.networkReachability, CFRunLoopGetMain(), kCFRunLoopCommonModes);
 
+      //在异步线程 发送一次当前的网络状态。
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0),^{
         SCNetworkReachabilityFlags flags;
         if (SCNetworkReachabilityGetFlags(self.networkReachability, &flags)) {
@@ -232,6 +233,7 @@ static void AFNetworkReachabilityReleaseCallback(const void *info) {
     });
 }
 
+/*停止网络监控*/
 - (void)stopMonitoring {
     if (!self.networkReachability) {
         return;
@@ -253,7 +255,7 @@ static void AFNetworkReachabilityReleaseCallback(const void *info) {
 }
 
 #pragma mark - NSKeyValueObserving
-
+//注册键值依赖
 + (NSSet *)keyPathsForValuesAffectingValueForKey:(NSString *)key {
     if ([key isEqualToString:@"reachable"] || [key isEqualToString:@"reachableViaWWAN"] || [key isEqualToString:@"reachableViaWiFi"]) {
         return [NSSet setWithObject:@"networkReachabilityStatus"];

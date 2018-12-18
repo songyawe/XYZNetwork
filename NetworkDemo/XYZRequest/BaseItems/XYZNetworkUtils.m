@@ -13,7 +13,7 @@
 #import <AFNetworking/AFURLRequestSerialization.h>
 void XYZLog(NSString *format, ...) {
 #ifdef DEBUG
-    if (![XYZNetworkConfig sharedConfig].debugLogEnabled) {
+    if (![XYZNetworkConfig sharedConfig].isDebugLogEnabled) {
         return;
     }
     va_list argptr;

@@ -112,7 +112,7 @@
     }
     
     requestSerializer.timeoutInterval = [request requestTimeoutInterval];
-    requestSerializer.allowsCellularAccess = [request allowsCellularAccess];
+    requestSerializer.allowsCellularAccess = request.isAllowsCellularAccess;
     
     
     NSArray<NSString *> *authorizationHeaderFieldArray = [request requestAuthorizationHeaderFieldArray];

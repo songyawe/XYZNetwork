@@ -39,7 +39,7 @@ NS_ENUM(NSInteger) {
 //缓存时间（秒），默认7天，在加载方式不为XYZCacheTypeNET有效，设置大于0的数值有效
 @property(nonatomic, readwrite) NSInteger cacheTimeInSeconds;
 //是否异步写入缓存,默认是异步
-@property(nonatomic, readwrite) BOOL writeCacheAsynchronously;
+@property(nonatomic, readwrite, getter = isWriteCacheAsynchronously) BOOL writeCacheAsynchronously;
 
 #pragma mark - 方法相关
 

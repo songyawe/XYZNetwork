@@ -77,7 +77,7 @@ typedef void(^XYZRequestCompletionBlock)(__kindof XYZBaseRequest *request);
 @property(nonatomic, readwrite) XYZResponseSerializerType responseSerializerType;
 
 // 是否允许请求使用蜂窝网络，默认是允许
-@property (nonatomic) BOOL allowsCellularAccess;
+@property (nonatomic, getter = isAllowsCellularAccess) BOOL allowsCellularAccess;
 
 // tag 可以用来标识请求，默认是0
 @property (nonatomic) NSInteger tag;

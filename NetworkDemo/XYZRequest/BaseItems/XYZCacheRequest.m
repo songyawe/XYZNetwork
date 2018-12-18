@@ -145,7 +145,7 @@ static dispatch_queue_t XYZCacheRequest_cache_writing_queue() {
 - (void)requestCompletePreprocessor {
     [super requestCompletePreprocessor];
 
-    if (self.writeCacheAsynchronously) {
+    if (self.isWriteCacheAsynchronously) {
         dispatch_async(XYZCacheRequest_cache_writing_queue(), ^{
             [self saveResponseDataToCacheFile:[super responseData]];
         });

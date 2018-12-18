@@ -1,23 +1,5 @@
 // AFURLRequestSerialization.h
 // Copyright (c) 2011–2016 Alamofire Software Foundation ( http://alamofire.org/ )
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
 #import <TargetConditionals.h>
@@ -31,45 +13,30 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- Returns a percent-escaped string following RFC 3986 for a query string key or value.
- RFC 3986 states that the following characters are "reserved" characters.
- - General Delimiters: ":", "#", "[", "]", "@", "?", "/"
- - Sub-Delimiters: "!", "$", "&", "'", "(", ")", "*", "+", ",", ";", "="
-
- In RFC 3986 - Section 3.4, it states that the "?" and "/" characters should not be escaped to allow
- query strings to include a URL. Therefore, all "reserved" characters with the exception of "?" and "/"
- should be percent-escaped in the query string.
- 
- @param string The string to be percent-escaped.
- 
- @return The percent-escaped string.
+ 根据RFC 3986的规定：URL百分比编码的保留字段分为：
+  1.   ':'  '#'  '['  ']'  '@'  '?'  '/'
+  2.   '!'  '$'  '&'  '''  '('  ')'  '*'  '+'  ','  ';' '='
+  在对查询字段百分比编码时，'?'和'/'可以不用编码，其他的都要进行编码。
+ 1. 字符串需要经过过滤 ，过滤法则通过 NSMutableCharacterSet 实现。添加规则后，只对规则内的因子进行编码。
+ 2. 为了处理类似emoji这样的字符串，rangeOfComposedCharacterSequencesForRange 使用了while循环来处理，也就是把字符串按照batchSize分割处理完再拼回。
  */
 FOUNDATION_EXPORT NSString * AFPercentEscapedStringFromString(NSString *string);
 
 /**
- A helper method to generate encoded url query parameters for appending to the end of a URL.
-
- @param parameters A dictionary of key/values to be encoded.
-
- @return A url encoded query string
+ 该方法最终把类型为NSDictionary的参数处理为字符串类型。
+ 举个简单的没进行百分百编码的例子：
+ 如果参数是NSDictionary *info = @{@"name":@"zhangsan",@"age":20} ;
+ AFQueryStringFromParameters(info)  的结果就是：name=zhangsan&age=20 (没有百分比编码)
  */
 FOUNDATION_EXPORT NSString * AFQueryStringFromParameters(NSDictionary *parameters);
 
 /**
- The `AFURLRequestSerialization` protocol is adopted by an object that encodes parameters for a specified HTTP requests. Request serializers may encode parameters as query strings, HTTP bodies, setting the appropriate HTTP header fields as necessary.
 
- For example, a JSON request serializer may set the HTTP body of the request to a JSON representation, and set the `Content-Type` HTTP header field value to `application/json`.
  */
 @protocol AFURLRequestSerialization <NSObject, NSSecureCoding, NSCopying>
 
 /**
- Returns a request with the specified parameters encoded into a copy of the original request.
 
- @param request The original request.
- @param parameters The parameters to be encoded.
- @param error The error that occurred while attempting to encode the request parameters.
-
- @return A serialized request.
  */
 - (nullable NSURLRequest *)requestBySerializingRequest:(NSURLRequest *)request
                                withParameters:(nullable id)parameters
@@ -89,56 +56,50 @@ typedef NS_ENUM(NSUInteger, AFHTTPRequestQueryStringSerializationStyle) {
 @protocol AFMultipartFormData;
 
 /**
- `AFHTTPRequestSerializer` conforms to the `AFURLRequestSerialization` & `AFURLResponseSerialization` protocols, offering a concrete base implementation of query string / URL form-encoded parameter serialization and default request headers, as well as response status code and content type validation.
 
- Any request or response serializer dealing with HTTP is encouraged to subclass `AFHTTPRequestSerializer` in order to ensure consistent default behavior.
  */
 @interface AFHTTPRequestSerializer : NSObject <AFURLRequestSerialization>
 
 /**
- The string encoding used to serialize parameters. `NSUTF8StringEncoding` by default.
+字符串编码，默认UTF8
  */
 @property (nonatomic, assign) NSStringEncoding stringEncoding;
 
 /**
- Whether created requests can use the device’s cellular radio (if present). `YES` by default.
-
- @see NSMutableURLRequest -setAllowsCellularAccess:
+是否允许访问蜂窝网络
  */
 @property (nonatomic, assign) BOOL allowsCellularAccess;
 
 /**
- The cache policy of created requests. `NSURLRequestUseProtocolCachePolicy` by default.
-
- @see NSMutableURLRequest -setCachePolicy:
+缓存策略
+ NSURLRequestUseProtocolCachePolicy      这个是默认的缓存策略，缓存不存在，就请求服务器，缓存存在，会根据response中的Cache-Control字段判断下一步操作，如: Cache-Control字段为must-revalidata, 则询问服务端该数据是否有更新，无更新的话直接返回给用户缓存数据，若已更新，则请求服务端。
+ NSURLRequestReloadIgnoringLocalCacheData   这个策略是不管有没有本地缓存，都请求服务器。
+ NSURLRequestReloadIgnoringLocalAndRemoteCacheData   这个策略会忽略本地缓存和中间代理 直接访问源server
+ NSURLRequestReturnCacheDataElseLoad    这个策略指，有缓存就是用，不管其有效性，即Cache-Control字段 ，没有就访问源server
+ NSURLRequestReturnCacheDataDontLoad   这个策略只加载本地数据，不做其他操作，适用于没有网路的情况
+ NSURLRequestReloadRevalidatingCacheData  这个策略标示缓存数据必须得到服务器确认才能使用，未实现。
  */
 @property (nonatomic, assign) NSURLRequestCachePolicy cachePolicy;
 
 /**
- Whether created requests should use the default cookie handling. `YES` by default.
 
- @see NSMutableURLRequest -setHTTPShouldHandleCookies:
  */
 @property (nonatomic, assign) BOOL HTTPShouldHandleCookies;
 
 /**
- Whether created requests can continue transmitting data before receiving a response from an earlier transmission. `NO` by default
-
- @see NSMutableURLRequest -setHTTPShouldUsePipelining:
+ 是否使用管线
+在HTTP连接中，一般都是一个请求对应一个连接，每次简历tcp连接是需要一定时间的。管线化，允许一次发送一组请求而不必等到相应。但由于目前并不是所有的服务器都支持这项功能，因此这个属性默认是不开启的。管线化使用同一tcp连接完成任务，因此能够大大提交请求的时间。但是响应要和请求的顺序 保持一致才行。使用场景也有，比如说首页要发送很多请求，可以考虑这种技术。但前提是建立连接成功后才可以使用。
  */
 @property (nonatomic, assign) BOOL HTTPShouldUsePipelining;
 
 /**
- The network service type for created requests. `NSURLNetworkServiceTypeDefault` by default.
-
- @see NSMutableURLRequest -setNetworkServiceType:
+网络服务类型
+ 可以通过这个值来指定当前的网络类型，系统会跟据制定的网络类型对很多方面进行优化，这个就设计到很细微的编程技巧了，可作为一个优化的点备用。
  */
 @property (nonatomic, assign) NSURLRequestNetworkServiceType networkServiceType;
 
 /**
- The timeout interval, in seconds, for created requests. The default timeout interval is 60 seconds.
-
- @see NSMutableURLRequest -setTimeoutInterval:
+超时默认60s
  */
 @property (nonatomic, assign) NSTimeInterval timeoutInterval;
 
@@ -147,49 +108,35 @@ typedef NS_ENUM(NSUInteger, AFHTTPRequestQueryStringSerializationStyle) {
 ///---------------------------------------
 
 /**
- Default HTTP header field values to be applied to serialized requests. By default, these include the following:
-
- - `Accept-Language` with the contents of `NSLocale +preferredLanguages`
- - `User-Agent` with the contents of various bundle identifiers and OS designations
-
- @discussion To add or remove default request headers, use `setValue:forHTTPHeaderField:`.
+HTTPHeader 信息
  */
 @property (readonly, nonatomic, strong) NSDictionary <NSString *, NSString *> *HTTPRequestHeaders;
 
 /**
- Creates and returns a serializer with default configuration.
+ 返回默认配置实例化
  */
 + (instancetype)serializer;
 
 /**
- Sets the value for the HTTP headers set in request objects made by the HTTP client. If `nil`, removes the existing value for that header.
-
- @param field The HTTP header to set a default value for
- @param value The value set as default for the specified header, or `nil`
+设置HTTP header 当value为nil 就移除field
  */
 - (void)setValue:(nullable NSString *)value
 forHTTPHeaderField:(NSString *)field;
 
 /**
- Returns the value for the HTTP headers set in the request serializer.
-
- @param field The HTTP header to retrieve the default value for
-
- @return The value set as default for the specified header, or `nil`
+返回field标记的内容
  */
 - (nullable NSString *)valueForHTTPHeaderField:(NSString *)field;
 
 /**
- Sets the "Authorization" HTTP header set in request objects made by the HTTP client to a basic authentication value with Base64-encoded username and password. This overwrites any existing value for this header.
-
- @param username The HTTP basic auth username
- @param password The HTTP basic auth password
+设置Authorization字段
+ 下边这两个方法Authorization 这个词有关，上边的那个方法是根据用户名和密码 生成一个 Authorization 和值，拼接到请求头中规则是这样的
  */
 - (void)setAuthorizationHeaderFieldWithUsername:(NSString *)username
                                        password:(NSString *)password;
 
 /**
- Clears any existing value for the "Authorization" HTTP header.
+清空
  */
 - (void)clearAuthorizationHeader;
 
@@ -198,23 +145,17 @@ forHTTPHeaderField:(NSString *)field;
 ///-------------------------------------------------------
 
 /**
- HTTP methods for which serialized requests will encode parameters as a query string. `GET`, `HEAD`, and `DELETE` by default.
+
  */
 @property (nonatomic, strong) NSSet <NSString *> *HTTPMethodsEncodingParametersInURI;
 
 /**
- Set the method of query string serialization according to one of the pre-defined styles.
 
- @param style The serialization style.
-
- @see AFHTTPRequestQueryStringSerializationStyle
  */
 - (void)setQueryStringSerializationWithStyle:(AFHTTPRequestQueryStringSerializationStyle)style;
 
 /**
- Set the a custom method of query string serialization according to the specified block.
 
- @param block A block that defines a process of encoding parameters into a query string. This block returns the query string and takes three arguments: the request, the parameters to encode, and the error that occurred when attempting to encode parameters for the given request.
  */
 - (void)setQueryStringSerializationWithBlock:(nullable NSString * (^)(NSURLRequest *request, id parameters, NSError * __autoreleasing *error))block;
 
@@ -223,16 +164,7 @@ forHTTPHeaderField:(NSString *)field;
 ///-------------------------------
 
 /**
- Creates an `NSMutableURLRequest` object with the specified HTTP method and URL string.
 
- If the HTTP method is `GET`, `HEAD`, or `DELETE`, the parameters will be used to construct a url-encoded query string that is appended to the request's URL. Otherwise, the parameters will be encoded according to the value of the `parameterEncoding` property, and set as the request body.
-
- @param method The HTTP method for the request, such as `GET`, `POST`, `PUT`, or `DELETE`. This parameter must not be `nil`.
- @param URLString The URL string used to create the request URL.
- @param parameters The parameters to be either set as a query string for `GET` requests, or the request HTTP body.
- @param error The error that occurred while constructing the request.
-
- @return An `NSMutableURLRequest` object.
  */
 - (NSMutableURLRequest *)requestWithMethod:(NSString *)method
                                  URLString:(NSString *)URLString
@@ -240,17 +172,7 @@ forHTTPHeaderField:(NSString *)field;
                                      error:(NSError * _Nullable __autoreleasing *)error;
 
 /**
- Creates an `NSMutableURLRequest` object with the specified HTTP method and URLString, and constructs a `multipart/form-data` HTTP body, using the specified parameters and multipart form data block. See http://www.w3.org/TR/html4/interact/forms.html#h-17.13.4.2
-
- Multipart form requests are automatically streamed, reading files directly from disk along with in-memory data in a single HTTP body. The resulting `NSMutableURLRequest` object has an `HTTPBodyStream` property, so refrain from setting `HTTPBodyStream` or `HTTPBody` on this request object, as it will clear out the multipart form body stream.
-
- @param method The HTTP method for the request. This parameter must not be `GET` or `HEAD`, or `nil`.
- @param URLString The URL string used to create the request URL.
- @param parameters The parameters to be encoded and set in the request HTTP body.
- @param block A block that takes a single argument and appends data to the HTTP body. The block argument is an object adopting the `AFMultipartFormData` protocol.
- @param error The error that occurred while constructing the request.
-
- @return An `NSMutableURLRequest` object
+ 
  */
 - (NSMutableURLRequest *)multipartFormRequestWithMethod:(NSString *)method
                                               URLString:(NSString *)URLString
@@ -259,15 +181,7 @@ forHTTPHeaderField:(NSString *)field;
                                                   error:(NSError * _Nullable __autoreleasing *)error;
 
 /**
- Creates an `NSMutableURLRequest` by removing the `HTTPBodyStream` from a request, and asynchronously writing its contents into the specified file, invoking the completion handler when finished.
-
- @param request The multipart form request. The `HTTPBodyStream` property of `request` must not be `nil`.
- @param fileURL The file URL to write multipart form contents to.
- @param handler A handler block to execute.
-
- @discussion There is a bug in `NSURLSessionTask` that causes requests to not send a `Content-Length` header when streaming contents from an HTTP body, which is notably problematic when interacting with the Amazon S3 webservice. As a workaround, this method takes a request constructed with `multipartFormRequestWithMethod:URLString:parameters:constructingBodyWithBlock:error:`, or any other request with an `HTTPBodyStream`, writes the contents to the specified file and returns a copy of the original request with the `HTTPBodyStream` property set to `nil`. From here, the file can either be passed to `AFURLSessionManager -uploadTaskWithRequest:fromFile:progress:completionHandler:`, or have its contents read into an `NSData` that's assigned to the `HTTPBody` property of the request.
-
- @see https://github.com/AFNetworking/AFNetworking/issues/1398
+ 
  */
 - (NSMutableURLRequest *)requestWithMultipartFormRequest:(NSURLRequest *)request
                              writingStreamContentsToFile:(NSURL *)fileURL
@@ -278,35 +192,19 @@ forHTTPHeaderField:(NSString *)field;
 #pragma mark -
 
 /**
- The `AFMultipartFormData` protocol defines the methods supported by the parameter in the block argument of `AFHTTPRequestSerializer -multipartFormRequestWithMethod:URLString:parameters:constructingBodyWithBlock:`.
+ 
  */
 @protocol AFMultipartFormData
 
 /**
- Appends the HTTP header `Content-Disposition: file; filename=#{generated filename}; name=#{name}"` and `Content-Type: #{generated mimeType}`, followed by the encoded file data and the multipart form boundary.
 
- The filename and MIME type for this data in the form will be automatically generated, using the last path component of the `fileURL` and system associated MIME type for the `fileURL` extension, respectively.
-
- @param fileURL The URL corresponding to the file whose content will be appended to the form. This parameter must not be `nil`.
- @param name The name to be associated with the specified data. This parameter must not be `nil`.
- @param error If an error occurs, upon return contains an `NSError` object that describes the problem.
-
- @return `YES` if the file data was successfully appended, otherwise `NO`.
  */
 - (BOOL)appendPartWithFileURL:(NSURL *)fileURL
                          name:(NSString *)name
                         error:(NSError * _Nullable __autoreleasing *)error;
 
 /**
- Appends the HTTP header `Content-Disposition: file; filename=#{filename}; name=#{name}"` and `Content-Type: #{mimeType}`, followed by the encoded file data and the multipart form boundary.
-
- @param fileURL The URL corresponding to the file whose content will be appended to the form. This parameter must not be `nil`.
- @param name The name to be associated with the specified data. This parameter must not be `nil`.
- @param fileName The file name to be used in the `Content-Disposition` header. This parameter must not be `nil`.
- @param mimeType The declared MIME type of the file data. This parameter must not be `nil`.
- @param error If an error occurs, upon return contains an `NSError` object that describes the problem.
-
- @return `YES` if the file data was successfully appended otherwise `NO`.
+ 
  */
 - (BOOL)appendPartWithFileURL:(NSURL *)fileURL
                          name:(NSString *)name
@@ -315,13 +213,7 @@ forHTTPHeaderField:(NSString *)field;
                         error:(NSError * _Nullable __autoreleasing *)error;
 
 /**
- Appends the HTTP header `Content-Disposition: file; filename=#{filename}; name=#{name}"` and `Content-Type: #{mimeType}`, followed by the data from the input stream and the multipart form boundary.
-
- @param inputStream The input stream to be appended to the form data
- @param name The name to be associated with the specified input stream. This parameter must not be `nil`.
- @param fileName The filename to be associated with the specified input stream. This parameter must not be `nil`.
- @param length The length of the specified input stream in bytes.
- @param mimeType The MIME type of the specified data. (For example, the MIME type for a JPEG image is image/jpeg.) For a list of valid MIME types, see http://www.iana.org/assignments/media-types/. This parameter must not be `nil`.
+ 
  */
 - (void)appendPartWithInputStream:(nullable NSInputStream *)inputStream
                              name:(NSString *)name
@@ -330,12 +222,7 @@ forHTTPHeaderField:(NSString *)field;
                          mimeType:(NSString *)mimeType;
 
 /**
- Appends the HTTP header `Content-Disposition: file; filename=#{filename}; name=#{name}"` and `Content-Type: #{mimeType}`, followed by the encoded file data and the multipart form boundary.
 
- @param data The data to be encoded and appended to the form data.
- @param name The name to be associated with the specified data. This parameter must not be `nil`.
- @param fileName The filename to be associated with the specified data. This parameter must not be `nil`.
- @param mimeType The MIME type of the specified data. (For example, the MIME type for a JPEG image is image/jpeg.) For a list of valid MIME types, see http://www.iana.org/assignments/media-types/. This parameter must not be `nil`.
  */
 - (void)appendPartWithFileData:(NSData *)data
                           name:(NSString *)name
@@ -343,10 +230,7 @@ forHTTPHeaderField:(NSString *)field;
                       mimeType:(NSString *)mimeType;
 
 /**
- Appends the HTTP headers `Content-Disposition: form-data; name=#{name}"`, followed by the encoded data and the multipart form boundary.
-
- @param data The data to be encoded and appended to the form data.
- @param name The name to be associated with the specified data. This parameter must not be `nil`.
+ 
  */
 
 - (void)appendPartWithFormData:(NSData *)data
@@ -354,21 +238,13 @@ forHTTPHeaderField:(NSString *)field;
 
 
 /**
- Appends HTTP headers, followed by the encoded data and the multipart form boundary.
-
- @param headers The HTTP headers to be appended to the form data.
- @param body The data to be encoded and appended to the form data. This parameter must not be `nil`.
+ 
  */
 - (void)appendPartWithHeaders:(nullable NSDictionary <NSString *, NSString *> *)headers
                          body:(NSData *)body;
 
 /**
- Throttles request bandwidth by limiting the packet size and adding a delay for each chunk read from the upload stream.
-
- When uploading over a 3G or EDGE connection, requests may fail with "request body stream exhausted". Setting a maximum packet size and delay according to the recommended values (`kAFUploadStream3GSuggestedPacketSize` and `kAFUploadStream3GSuggestedDelay`) lowers the risk of the input stream exceeding its allocated bandwidth. Unfortunately, there is no definite way to distinguish between a 3G, EDGE, or LTE connection over `NSURLConnection`. As such, it is not recommended that you throttle bandwidth based solely on network reachability. Instead, you should consider checking for the "request body stream exhausted" in a failure block, and then retrying the request with throttled bandwidth.
-
- @param numberOfBytes Maximum packet size, in number of bytes. The default packet size for an input stream is 16kb.
- @param delay Duration of delay each time a packet is read. By default, no delay is set.
+ 
  */
 - (void)throttleBandwidthWithPacketSize:(NSUInteger)numberOfBytes
                                   delay:(NSTimeInterval)delay;
@@ -378,19 +254,17 @@ forHTTPHeaderField:(NSString *)field;
 #pragma mark -
 
 /**
- `AFJSONRequestSerializer` is a subclass of `AFHTTPRequestSerializer` that encodes parameters as JSON using `NSJSONSerialization`, setting the `Content-Type` of the encoded request to `application/json`.
+ 
  */
 @interface AFJSONRequestSerializer : AFHTTPRequestSerializer
 
 /**
- Options for writing the request JSON data from Foundation objects. For possible values, see the `NSJSONSerialization` documentation section "NSJSONWritingOptions". `0` by default.
+ 
  */
 @property (nonatomic, assign) NSJSONWritingOptions writingOptions;
 
 /**
- Creates and returns a JSON serializer with specified reading and writing options.
-
- @param writingOptions The specified JSON writing options.
+ 
  */
 + (instancetype)serializerWithWritingOptions:(NSJSONWritingOptions)writingOptions;
 
@@ -399,27 +273,22 @@ forHTTPHeaderField:(NSString *)field;
 #pragma mark -
 
 /**
- `AFPropertyListRequestSerializer` is a subclass of `AFHTTPRequestSerializer` that encodes parameters as JSON using `NSPropertyListSerializer`, setting the `Content-Type` of the encoded request to `application/x-plist`.
+ 
  */
 @interface AFPropertyListRequestSerializer : AFHTTPRequestSerializer
 
 /**
- The property list format. Possible values are described in "NSPropertyListFormat".
+ 
  */
 @property (nonatomic, assign) NSPropertyListFormat format;
 
 /**
- @warning The `writeOptions` property is currently unused.
+
  */
 @property (nonatomic, assign) NSPropertyListWriteOptions writeOptions;
 
 /**
- Creates and returns a property list serializer with a specified format, read options, and write options.
-
- @param format The property list format.
- @param writeOptions The property list write options.
-
- @warning The `writeOptions` property is currently unused.
+ 
  */
 + (instancetype)serializerWithFormat:(NSPropertyListFormat)format
                         writeOptions:(NSPropertyListWriteOptions)writeOptions;
@@ -433,45 +302,17 @@ forHTTPHeaderField:(NSString *)field;
 ///----------------
 
 /**
- ## Error Domains
-
- The following error domain is predefined.
-
- - `NSString * const AFURLRequestSerializationErrorDomain`
-
- ### Constants
-
- `AFURLRequestSerializationErrorDomain`
- AFURLRequestSerializer errors. Error codes for `AFURLRequestSerializationErrorDomain` correspond to codes in `NSURLErrorDomain`.
+ 
  */
 FOUNDATION_EXPORT NSString * const AFURLRequestSerializationErrorDomain;
 
 /**
- ## User info dictionary keys
 
- These keys may exist in the user info dictionary, in addition to those defined for NSError.
-
- - `NSString * const AFNetworkingOperationFailingURLRequestErrorKey`
-
- ### Constants
-
- `AFNetworkingOperationFailingURLRequestErrorKey`
- The corresponding value is an `NSURLRequest` containing the request of the operation associated with an error. This key is only present in the `AFURLRequestSerializationErrorDomain`.
  */
 FOUNDATION_EXPORT NSString * const AFNetworkingOperationFailingURLRequestErrorKey;
 
 /**
- ## Throttling Bandwidth for HTTP Request Input Streams
-
- @see -throttleBandwidthWithPacketSize:delay:
-
- ### Constants
-
- `kAFUploadStream3GSuggestedPacketSize`
- Maximum packet size, in number of bytes. Equal to 16kb.
-
- `kAFUploadStream3GSuggestedDelay`
- Duration of delay each time a packet is read. Equal to 0.2 seconds.
+ 
  */
 FOUNDATION_EXPORT NSUInteger const kAFUploadStream3GSuggestedPacketSize;
 FOUNDATION_EXPORT NSTimeInterval const kAFUploadStream3GSuggestedDelay;

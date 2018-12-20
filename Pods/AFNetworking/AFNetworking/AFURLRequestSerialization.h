@@ -139,32 +139,40 @@ forHTTPHeaderField:(NSString *)field;
 清空
  */
 - (void)clearAuthorizationHeader;
+    
+/*
+ 以上这两个方法Authorization 这个词有关，上边的那个方法是根据用户名和密码 生成一个 Authorization 和值，拼接到请求头中规则是这样的
+ Authorization: Basic YWRtaW46YWRtaW4=    其中Basic表示基础认证，当然还有其他认证，如果感兴趣，可以看看本文开始提出的那本书。后边的YWRtaW46YWRtaW4= 是根据username:password 拼接后然后在经过Base64编码后的结果。
+ 如果header中有 Authorization这个字段，那么服务器会验证用户名和密码，如果不正确的话会返回401错误。
+ */
 
 ///-------------------------------------------------------
 /// @name Configuring Query String Parameter Serialization
 ///-------------------------------------------------------
 
 /**
-
+需要把参数拼接到URL中的HTTP motheds 默认这个集合中包含了GET/HEAD/DELETE
  */
 @property (nonatomic, strong) NSSet <NSString *> *HTTPMethodsEncodingParametersInURI;
 
 /**
-
+设置查询字符串序列化的样式，AFN只实现了百分比编码
  */
 - (void)setQueryStringSerializationWithStyle:(AFHTTPRequestQueryStringSerializationStyle)style;
 
 /**
-
+可以自定义序列化的方法，这个方法通过这个block来实现，AFN内部查询字符串序列化会调用这个block
+ 这个要介绍一下 ，当我们需要一些东西或控件或对象需要自定义的时候，我们可以把我们的要求封装到一个block中。通过定制这个block达到自由定制的目的。
+ 举个简单的例子，加入我们需要创建一个view，这个view跟两个参数相关，title，subtitle。 我们就可以使用上边的这个思想，返回一个返回值为view的block，这样通过参数，我们可以自由定制各种各样的view。
  */
 - (void)setQueryStringSerializationWithBlock:(nullable NSString * (^)(NSURLRequest *request, id parameters, NSError * __autoreleasing *error))block;
 
 ///-------------------------------
 /// @name Creating Request Objects
 ///-------------------------------
-
+//下边这三个是核心方法了，用来创建NSMutableURLRequest 这个对象，这个对象的创建又与上边①--⑬的设置息息相关
 /**
-
+当method为GET/HEAD/DELETE 时，参数会被拼接到URL中，其他情况则会当做requset的body处理。
  */
 - (NSMutableURLRequest *)requestWithMethod:(NSString *)method
                                  URLString:(NSString *)URLString
@@ -172,7 +180,9 @@ forHTTPHeaderField:(NSString *)field;
                                      error:(NSError * _Nullable __autoreleasing *)error;
 
 /**
- 
+ 这个方法支持上传数据，值得注意的是之所以能够把本地磁盘或者内存中的数据发送到服务器，是因为NSURLRequest 有两个属性 ：
+ NSData *HTTPBody;
+ NSInputStream *HTTPBodyStream;
  */
 - (NSMutableURLRequest *)multipartFormRequestWithMethod:(NSString *)method
                                               URLString:(NSString *)URLString
@@ -181,7 +191,7 @@ forHTTPHeaderField:(NSString *)field;
                                                   error:(NSError * _Nullable __autoreleasing *)error;
 
 /**
- 
+ 这个方法可以把一个请求中的body数据保存到一个文件中，然后返回一个HTTPBodyStream为nil的请求，按照注释说的，NSURLSessionTask在使用流传数据时。如果没拼接Content-Length 会有问题。然后可以把这文件上传或者把它转为二进制文件上传。
  */
 - (NSMutableURLRequest *)requestWithMultipartFormRequest:(NSURLRequest *)request
                              writingStreamContentsToFile:(NSURL *)fileURL

@@ -9,20 +9,12 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- The `AFURLResponseSerialization` protocol is adopted by an object that decodes data into a more useful object representation, according to details in the server response. Response serializers may additionally perform validation on the incoming response and data.
-
- For example, a JSON response serializer may check for an acceptable status code (`2XX` range) and content type (`application/json`), decoding a valid JSON response into an object.
+这是一个协议，只要遵守这个协议，就要实现NSSecureCoding/NSCopying这两个协议，还要实现
  */
 @protocol AFURLResponseSerialization <NSObject, NSSecureCoding, NSCopying>
 
 /**
- The response object decoded from the data associated with a specified response.
-
- @param response The response to be processed.
- @param data The response data to be decoded.
- @param error The error that occurred while attempting to decode the response data.
-
- @return The object decoded from the specified response data.
+这个方法来返回序列化后的结果。不管是下边的AFHTTPResponseSerializer，还是它的子类，都遵守这个协议，也就是在各自的实现中实现了这个协议，然后返回了属于自身的一个结果
  */
 - (nullable id)responseObjectForResponse:(nullable NSURLResponse *)response
                            data:(nullable NSData *)data
@@ -33,9 +25,9 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 
 /**
- `AFHTTPResponseSerializer` conforms to the `AFURLRequestSerialization` & `AFURLResponseSerialization` protocols, offering a concrete base implementation of query string / URL form-encoded parameter serialization and default request headers, as well as response status code and content type validation.
-
- Any request or response serializer dealing with HTTP is encouraged to subclass `AFHTTPResponseSerializer` in order to ensure consistent default behavior.
+ `AFHTTPResponseSerializer`符合`AFURLRequestSerialization`和`AFURLResponseSerialization`协议，提供查询字符串/ URL表单编码参数序列化和默认请求标题的具体基本实现，以及响应状态代码和内容类型验证。
+ 
+   鼓励任何处理HTTP的请求或响应序列化程序子类化`AFHTTPResponseSerializer`以确保一致的默认行为。
  */
 @interface AFHTTPResponseSerializer : NSObject <AFURLResponseSerialization>
 
@@ -44,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSStringEncoding stringEncoding DEPRECATED_MSG_ATTRIBUTE("The string encoding is never used. AFHTTPResponseSerializer only validates status codes and content types but does not try to decode the received data in any way.");
 
 /**
- Creates and returns a serializer with default configuration.
+创建并返回具有默认配置的序列化程序。
  */
 + (instancetype)serializer;
 
@@ -53,27 +45,25 @@ NS_ASSUME_NONNULL_BEGIN
 ///-----------------------------------------
 
 /**
- The acceptable HTTP status codes for responses. When non-`nil`, responses with status codes not contained by the set will result in an error during validation.
-
- See http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+响应的可接受HTTP状态代码。 当非“nil”时，具有未包含状态代码的响应将在验证期间导致错误。
  */
 @property (nonatomic, copy, nullable) NSIndexSet *acceptableStatusCodes;
 
 /**
- The acceptable MIME types for responses. When non-`nil`, responses with a `Content-Type` with MIME types that do not intersect with the set will result in an error during validation.
+响应的可接受MIME类型。 当非“nil”时，具有MIME类型的“Content-Type”的响应与该集合不相交将在验证期间导致错误。
  */
 @property (nonatomic, copy, nullable) NSSet <NSString *> *acceptableContentTypes;
 
 /**
- Validates the specified response and data.
-
- In its base implementation, this method checks for an acceptable status code and content type. Subclasses may wish to add other domain-specific checks.
-
- @param response The response to be validated.
- @param data The data associated with the response.
- @param error The error that occurred while attempting to validate the response.
-
- @return `YES` if the response is valid, otherwise `NO`.
+ 验证指定的响应和数据。
+ 
+   在其基本实现中，此方法检查可接受的状态代码和内容类型。 子类可能希望添加其他特定于域的检查。
+ 
+   @param response要验证的响应。
+   @param data与响应关联的数据。
+   @param error尝试验证响应时发生的错误。
+ 
+   @return`YES`如果响应有效，否则为“NO”。
  */
 - (BOOL)validateResponse:(nullable NSHTTPURLResponse *)response
                     data:(nullable NSData *)data
@@ -85,15 +75,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 /**
- `AFJSONResponseSerializer` is a subclass of `AFHTTPResponseSerializer` that validates and decodes JSON responses.
-
- By default, `AFJSONResponseSerializer` accepts the following MIME types, which includes the official standard, `application/json`, as well as other commonly-used types:
-
- - `application/json`
- - `text/json`
- - `text/javascript`
-
- In RFC 7159 - Section 8.1, it states that JSON text is required to be encoded in UTF-8, UTF-16, or UTF-32, and the default encoding is UTF-8. NSJSONSerialization provides support for all the encodings listed in the specification, and recommends UTF-8 for efficiency. Using an unsupported encoding will result in serialization error. See the `NSJSONSerialization` documentation for more details.
+ `AFJSONResponseSerializer`是`AFHTTPResponseSerializer`的子类，用于验证和解码JSON响应。
+ 
+   默认情况下，`AFJSONResponseSerializer`接受以下MIME类型，包括官方标准，`application / json`，以及其他常用类型：
+ 
+    - `application / json`
+    - `text / json`
+    - `text / javascript`
+ 
+   在RFC 7159  - 第8.1节中，它声明JSON文本需要以UTF-8，UTF-16或UTF-32编码，默认编码为UTF-8。 NSJSONSerialization支持规范中列出的所有编码，并建议使用UTF-8来提高效率。 使用不受支持的编码将导致序列化错误。 有关更多详细信息，请参阅`NSJSONSerialization`文档。
  */
 @interface AFJSONResponseSerializer : AFHTTPResponseSerializer
 

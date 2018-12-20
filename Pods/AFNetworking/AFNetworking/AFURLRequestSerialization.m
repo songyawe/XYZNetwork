@@ -179,12 +179,15 @@ NSArray * AFQueryStringPairsFromKeyAndValue(NSString *key, id value) {
 @end
 
 #pragma mark -
-
+//监听元素的集合
+/*
+ 这个是需要监听的属性，但看这些属性而言，要想实现当属性变化时，就调用监听方法，就需要我们手动实现监听方法。这也就说明，如果在平时开发中想要监听一个对象中某个自定义的属性时，只需要手动实现监听方法就行了。
+ */
 static NSArray * AFHTTPRequestSerializerObservedKeyPaths() {
     static NSArray *_AFHTTPRequestSerializerObservedKeyPaths = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        _AFHTTPRequestSerializerObservedKeyPaths = @[NSStringFromSelector(@selector(allowsCellularAccess)), NSStringFromSelector(@selector(cachePolicy)), NSStringFromSelector(@selector(HTTPShouldHandleCookies)), NSStringFromSelector(@selector(HTTPShouldUsePipelining)), NSStringFromSelector(@selector(networkServiceType)), NSStringFromSelector(@selector(timeoutInterval))];
+        _AFHTTPRequestSerializerObservedKeyPaths = @[NSStringFromSelector(@selector(allowsCellularAccess)), /*允许蜂窝访问*/ NSStringFromSelector(@selector(cachePolicy)),            /*缓存策略*/ NSStringFromSelector(@selector(HTTPShouldHandleCookies)),/*使用Cookies*/ NSStringFromSelector(@selector(HTTPShouldUsePipelining)),/*使用管线连接*/ NSStringFromSelector(@selector(networkServiceType)),     /*网络服务类型*/ NSStringFromSelector(@selector(timeoutInterval))];       /*超时时间*/
     });
 
     return _AFHTTPRequestSerializerObservedKeyPaths;

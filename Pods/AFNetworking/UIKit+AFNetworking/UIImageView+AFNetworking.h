@@ -1,23 +1,5 @@
 // UIImageView+AFNetworking.h
 // Copyright (c) 2011–2016 Alamofire Software Foundation ( http://alamofire.org/ )
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
 
@@ -32,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class AFImageDownloader;
 
 /**
- This category adds methods to the UIKit framework's `UIImageView` class. The methods in this category provide support for loading remote images asynchronously from a URL.
+此类别为UIKit框架的`UIImageView`类添加方法。 此类别中的方法支持从URL异步加载远程图像。
  */
 @interface UIImageView (AFNetworking)
 
@@ -41,14 +23,14 @@ NS_ASSUME_NONNULL_BEGIN
 ///------------------------------------
 
 /**
- Set the shared image downloader used to download images.
-
- @param imageDownloader The shared image downloader used to download images.
+ 设置用于下载图像的共享图像下载程序。
+ 
+   @param imageDownloader 用于下载图像的共享图像下载程序。
  */
 + (void)setSharedImageDownloader:(AFImageDownloader *)imageDownloader;
 
 /**
- The shared image downloader used to download images.
+用于下载图像的共享图像下载程序。
  */
 + (AFImageDownloader *)sharedImageDownloader;
 
@@ -57,40 +39,40 @@ NS_ASSUME_NONNULL_BEGIN
 ///--------------------
 
 /**
- Asynchronously downloads an image from the specified URL, and sets it once the request is finished. Any previous image request for the receiver will be cancelled.
-
- If the image is cached locally, the image is set immediately, otherwise the specified placeholder image will be set immediately, and then the remote image will be set once the request is finished.
-
- By default, URL requests have a `Accept` header field value of "image / *", a cache policy of `NSURLCacheStorageAllowed` and a timeout interval of 30 seconds, and are set not handle cookies. To configure URL requests differently, use `setImageWithURLRequest:placeholderImage:success:failure:`
-
- @param url The URL used for the image request.
+ 从指定的URL异步下载映像，并在请求完成后设置它。 之前对接收器的任何图像请求都将被取消。
+ 
+   如果图像在本地缓存，则立即设置图像，否则将立即设置指定的占位符图像，然后在请求完成后设置远程图像。
+ 
+   默认情况下，URL请求的“Accept”标头字段值为“image / *”，缓存策略为“NSURLCacheStorageAllowed”，超时间隔为30秒，并且设置为不处理cookie。 要以不同方式配置URL请求，请使用`setImageWithURLRequest：placeholderImage：success：failure：`
+ 
+   @param url 用于图像请求的URL。
  */
 - (void)setImageWithURL:(NSURL *)url;
 
 /**
- Asynchronously downloads an image from the specified URL, and sets it once the request is finished. Any previous image request for the receiver will be cancelled.
-
- If the image is cached locally, the image is set immediately, otherwise the specified placeholder image will be set immediately, and then the remote image will be set once the request is finished.
-
- By default, URL requests have a `Accept` header field value of "image / *", a cache policy of `NSURLCacheStorageAllowed` and a timeout interval of 30 seconds, and are set not handle cookies. To configure URL requests differently, use `setImageWithURLRequest:placeholderImage:success:failure:`
-
- @param url The URL used for the image request.
- @param placeholderImage The image to be set initially, until the image request finishes. If `nil`, the image view will not change its image until the image request finishes.
+ 从指定的URL异步下载映像，并在请求完成后设置它。 之前对接收器的任何图像请求都将被取消。
+ 
+   如果图像在本地缓存，则立即设置图像，否则将立即设置指定的占位符图像，然后在请求完成后设置远程图像。
+ 
+   默认情况下，URL请求的“Accept”标头字段值为“image / *”，缓存策略为“NSURLCacheStorageAllowed”，超时间隔为30秒，并且设置为不处理cookie。 要以不同方式配置URL请求，请使用`setImageWithURLRequest：placeholderImage：success：failure：`
+ 
+   @param url 用于图像请求的URL。
+   @param placeholderImage 最初要设置的图像，直到图像请求完成。 如果为“nil”，图像视图将不会更改其图像，直到图像请求完成。
  */
 - (void)setImageWithURL:(NSURL *)url
        placeholderImage:(nullable UIImage *)placeholderImage;
 
 /**
- Asynchronously downloads an image from the specified URL request, and sets it once the request is finished. Any previous image request for the receiver will be cancelled.
-
- If the image is cached locally, the image is set immediately, otherwise the specified placeholder image will be set immediately, and then the remote image will be set once the request is finished.
-
- If a success block is specified, it is the responsibility of the block to set the image of the image view before returning. If no success block is specified, the default behavior of setting the image with `self.image = image` is applied.
-
- @param urlRequest The URL request used for the image request.
- @param placeholderImage The image to be set initially, until the image request finishes. If `nil`, the image view will not change its image until the image request finishes.
- @param success A block to be executed when the image data task finishes successfully. This block has no return value and takes three arguments: the request sent from the client, the response received from the server, and the image created from the response data of request. If the image was returned from cache, the response parameter will be `nil`.
- @param failure A block object to be executed when the image data task finishes unsuccessfully, or that finishes successfully. This block has no return value and takes three arguments: the request sent from the client, the response received from the server, and the error object describing the network or parsing error that occurred.
+ 从指定的URL请求异步下载映像，并在请求完成后设置它。之前对接收器的任何图像请求都将被取消。
+ 
+  如果图像在本地缓存，则立即设置图像，否则将立即设置指定的占位符图像，然后在请求完成后设置远程图像。
+ 
+  如果指定了成功块，则块的责任是在返回之前设置图像视图的图像。如果未指定成功块，则应用使用“self.image = image”设置图像的默认行为。
+ 
+  @param urlRequest 用于图像请求的URL请求。
+  @param placeholderImage 最初要设置的图像，直到图像请求完成。如果为“nil”，图像视图将不会更改其图像，直到图像请求完成。
+  @param success 图像数据任务成功完成时要执行的块。此块没有返回值，并且有三个参数：从客户端发送的请求，从服务器接收的响应以及从请求的响应数据创建的映像。如果图像是从缓存返回的，则响应参数将为“nil”。
+  @param failure 当映像数据任务未成功完成或成功完成时要执行的块对象。此块没有返回值，并且有三个参数：从客户端发送的请求，从服务器接收的响应，以及描述网络或发生的解析错误的错误对象。
  */
 - (void)setImageWithURLRequest:(NSURLRequest *)urlRequest
               placeholderImage:(nullable UIImage *)placeholderImage
@@ -98,7 +80,7 @@ NS_ASSUME_NONNULL_BEGIN
                        failure:(nullable void (^)(NSURLRequest *request, NSHTTPURLResponse * _Nullable response, NSError *error))failure;
 
 /**
- Cancels any executing image operation for the receiver, if one exists.
+ 取消接收器的任何正在执行的图像操作（如果存在）。
  */
 - (void)cancelImageDownloadTask;
 

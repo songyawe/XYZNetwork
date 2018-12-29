@@ -1,5 +1,4 @@
 // AFSecurityPolicy.m
-// Copyright (c) 2011–2016 Alamofire Software Foundation ( http://alamofire.org/ )
 #import "AFSecurityPolicy.h"
 
 #import <AssertMacros.h>

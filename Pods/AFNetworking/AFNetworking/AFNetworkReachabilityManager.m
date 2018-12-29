@@ -1,5 +1,4 @@
 // AFNetworkReachabilityManager.m
-// Copyright (c) 2011–2016 Alamofire Software Foundation ( http://alamofire.org/ )
 
 #import "AFNetworkReachabilityManager.h"
 #if !TARGET_OS_WATCH

@@ -59,9 +59,9 @@ NS_ASSUME_NONNULL_BEGIN
  
    在其基本实现中，此方法检查可接受的状态代码和内容类型。 子类可能希望添加其他特定于域的检查。
  
-   @param response要验证的响应。
-   @param data与响应关联的数据。
-   @param error尝试验证响应时发生的错误。
+   @param response 要验证的响应。
+   @param data 与响应关联的数据。
+   @param error 尝试验证响应时发生的错误。
  
    @return`YES`如果响应有效，否则为“NO”。
  */
@@ -102,7 +102,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  创建并返回具有指定读取和写入选项的JSON序列化程序。
  
-   @param readingOptions指定的JSON读取选项。
+   @param readingOptions 指定的JSON读取选项。
  */
 + (instancetype)serializerWithReadingOptions:(NSJSONReadingOptions)readingOptions;
 
@@ -180,8 +180,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  创建并返回具有指定格式，读取选项和写入选项的属性列表序列化程序。
  
-   @param format属性列表格式。
-   @param readOptions属性列表读取选项。
+   @param format 属性列表格式。
+   @param readOptions 属性列表读取选项。
  */
 + (instancetype)serializerWithFormat:(NSPropertyListFormat)format
                          readOptions:(NSPropertyListReadOptions)readOptions;

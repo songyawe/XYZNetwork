@@ -77,7 +77,7 @@ NS_ASSUME_NONNULL_BEGIN
    这是指定的初始化程序。
  
    @param url HTTP客户端的基本URL。
-   @param configuration用于创建托管会话的配置。
+   @param configuration 用于创建托管会话的配置。
  
    @return新初始化的HTTP客户端
  */
@@ -91,10 +91,10 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  使用`GET`请求创建并运行`NSURLSessionDataTask`。
  
-   @param URLString用于创建请求URL的URL字符串。
-   @param参数根据客户端请求序列化程序编码的参数。
-   @param success任务成功完成时要执行的块对象。 此块没有返回值，并且有两个参数：数据任务和客户端响应序列化程序创建的响应对象。
-   @param failure当任务完成失败或成功完成但在解析响应数据时遇到错误时要执行的块对象。 此块没有返回值，并采用两个参数：数据任务和描述网络的错误或发生的解析错误。
+   @param URLString 用于创建请求URL的URL字符串。
+   @param parameters 参数根据客户端请求序列化程序编码的参数。
+   @param success 任务成功完成时要执行的块对象。 此块没有返回值，并且有两个参数：数据任务和客户端响应序列化程序创建的响应对象。
+   @param failure 当任务完成失败或成功完成但在解析响应数据时遇到错误时要执行的块对象。 此块没有返回值，并采用两个参数：数据任务和描述网络的错误或发生的解析错误。
  */
 - (nullable NSURLSessionDataTask *)GET:(NSString *)URLString
                    parameters:(nullable id)parameters
@@ -105,11 +105,11 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  使用`GET`请求创建并运行`NSURLSessionDataTask`。
  
-   @param URLString用于创建请求URL的URL字符串。
-   @param参数根据客户端请求序列化程序编码的参数。
-   @param downloadProgress更新下载进度时要执行的块对象。 请注意，此块在会话队列上调用，而不是在主队列中调用。
-   @param success任务成功完成时要执行的块对象。 此块没有返回值，并且有两个参数：数据任务和客户端响应序列化程序创建的响应对象。
-   @param failure当任务完成失败或成功完成但在解析响应数据时遇到错误时要执行的块对象。 此块没有返回值，并采用两个参数：数据任务和描述网络的错误或发生的解析错误。
+   @param URLString 用于创建请求URL的URL字符串。
+   @param parameters 参数根据客户端请求序列化程序编码的参数。
+   @param downloadProgress 更新下载进度时要执行的块对象。 请注意，此块在会话队列上调用，而不是在主队列中调用。
+   @param success 任务成功完成时要执行的块对象。 此块没有返回值，并且有两个参数：数据任务和客户端响应序列化程序创建的响应对象。
+   @param failure 当任务完成失败或成功完成但在解析响应数据时遇到错误时要执行的块对象。 此块没有返回值，并采用两个参数：数据任务和描述网络的错误或发生的解析错误。
 
  */
 - (nullable NSURLSessionDataTask *)GET:(NSString *)URLString
@@ -121,10 +121,10 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  使用`HEAD`请求创建并运行`NSURLSessionDataTask`。
  
-   @param URLString用于创建请求URL的URL字符串。
-   @param参数根据客户端请求序列化程序编码的参数。
-   @param success任务成功完成时要执行的块对象。 此块没有返回值，只接受一个参数：数据任务。
-   @param failure当任务完成失败或成功完成但在解析响应数据时遇到错误时要执行的块对象。 此块没有返回值，并采用两个参数：数据任务和描述网络的错误或发生的解析错误。
+   @param URLString 用于创建请求URL的URL字符串。
+   @param parameters 参数根据客户端请求序列化程序编码的参数。
+   @param success 任务成功完成时要执行的块对象。 此块没有返回值，只接受一个参数：数据任务。
+   @param failure 当任务完成失败或成功完成但在解析响应数据时遇到错误时要执行的块对象。 此块没有返回值，并采用两个参数：数据任务和描述网络的错误或发生的解析错误。
  */
 - (nullable NSURLSessionDataTask *)HEAD:(NSString *)URLString
                     parameters:(nullable id)parameters
@@ -134,10 +134,10 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  使用`POST`请求创建并运行`NSURLSessionDataTask`。
  
-   @param URLString用于创建请求URL的URL字符串。
-   @param参数根据客户端请求序列化程序编码的参数。
-   @param success任务成功完成时要执行的块对象。 此块没有返回值，并且有两个参数：数据任务和客户端响应序列化程序创建的响应对象。
-   @param failure当任务完成失败或成功完成但在解析响应数据时遇到错误时要执行的块对象。 此块没有返回值，并采用两个参数：数据任务和描述网络的错误或发生的解析错误。
+   @param URLString 用于创建请求URL的URL字符串。
+   @param parameters 参数根据客户端请求序列化程序编码的参数。
+   @param success 任务成功完成时要执行的块对象。 此块没有返回值，并且有两个参数：数据任务和客户端响应序列化程序创建的响应对象。
+   @param failure 当任务完成失败或成功完成但在解析响应数据时遇到错误时要执行的块对象。 此块没有返回值，并采用两个参数：数据任务和描述网络的错误或发生的解析错误。
  */
 - (nullable NSURLSessionDataTask *)POST:(NSString *)URLString
                     parameters:(nullable id)parameters
@@ -147,11 +147,11 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  使用`POST`请求创建并运行`NSURLSessionDataTask`。
  
-   @param URLString用于创建请求URL的URL字符串。
-   @param参数根据客户端请求序列化程序编码的参数。
-   @param uploadProgress更新上载进度时要执行的块对象。 请注意，此块在会话队列上调用，而不是在主队列中调用。
-   @param success任务成功完成时要执行的块对象。 此块没有返回值，并且有两个参数：数据任务和客户端响应序列化程序创建的响应对象。
-   @param failure当任务完成失败或成功完成但在解析响应数据时遇到错误时要执行的块对象。 此块没有返回值，并采用两个参数：数据任务和描述网络的错误或发生的解析错误。
+   @param URLString 用于创建请求URL的URL字符串。
+   @param parameters 参数根据客户端请求序列化程序编码的参数。
+   @param uploadProgress 更新上载进度时要执行的块对象。 请注意，此块在会话队列上调用，而不是在主队列中调用。
+   @param success 任务成功完成时要执行的块对象。 此块没有返回值，并且有两个参数：数据任务和客户端响应序列化程序创建的响应对象。
+   @param failure 当任务完成失败或成功完成但在解析响应数据时遇到错误时要执行的块对象。 此块没有返回值，并采用两个参数：数据任务和描述网络的错误或发生的解析错误。
  */
 - (nullable NSURLSessionDataTask *)POST:(NSString *)URLString
                              parameters:(nullable id)parameters
@@ -162,11 +162,11 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  使用多部分`POST`请求创建并运行`NSURLSessionDataTask`。
  
-   @param URLString用于创建请求URL的URL字符串。
-   @param参数根据客户端请求序列化程序编码的参数。
-   @param block一个块，它接受一个参数并将数据附加到HTTP主体。 block参数是采用`AFMultipartFormData`协议的对象。
-   @param success任务成功完成时要执行的块对象。 此块没有返回值，并且有两个参数：数据任务和客户端响应序列化程序创建的响应对象。
-   @param failure当任务完成失败或成功完成但在解析响应数据时遇到错误时要执行的块对象。 此块没有返回值，并采用两个参数：数据任务和描述网络的错误或发生的解析错误。
+   @param URLString 用于创建请求URL的URL字符串。
+   @param parameters 参数根据客户端请求序列化程序编码的参数。
+   @param block 一个块，它接受一个参数并将数据附加到HTTP主体。 block参数是采用`AFMultipartFormData`协议的对象。
+   @param success 任务成功完成时要执行的块对象。 此块没有返回值，并且有两个参数：数据任务和客户端响应序列化程序创建的响应对象。
+   @param failure 当任务完成失败或成功完成但在解析响应数据时遇到错误时要执行的块对象。 此块没有返回值，并采用两个参数：数据任务和描述网络的错误或发生的解析错误。
  */
 - (nullable NSURLSessionDataTask *)POST:(NSString *)URLString
                     parameters:(nullable id)parameters
@@ -177,12 +177,12 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  使用多部分`POST`请求​​创建并运行`NSURLSessionDataTask`。
  
-  @param URLString用于创建请求URL的URL字符串。
-  @param参数根据客户端请求序列化程序编码的参数。
-  @param block一个块，它接受一个参数并将数据附加到HTTP主体。 block参数是采用`AFMultipartFormData`协议的对象。
-  @param uploadProgress更新上载进度时要执行的块对象。请注意，此块在会话队列上调用，而不是在主队列中调用。
-  @param success任务成功完成时要执行的块对象。此块没有返回值，并且有两个参数：数据任务和客户端响应序列化程序创建的响应对象。
-  @param failure当任务完成失败或成功完成但在解析响应数据时遇到错误时要执行的块对象。此块没有返回值，并采用两个参数：数据任务和描述网络的错误或发生的解析错误。
+  @param URLString 用于创建请求URL的URL字符串。
+  @param parameters 参数根据客户端请求序列化程序编码的参数。
+  @param block 一个块，它接受一个参数并将数据附加到HTTP主体。 block参数是采用`AFMultipartFormData`协议的对象。
+  @param uploadProgress 更新上载进度时要执行的块对象。请注意，此块在会话队列上调用，而不是在主队列中调用。
+  @param success 任务成功完成时要执行的块对象。此块没有返回值，并且有两个参数：数据任务和客户端响应序列化程序创建的响应对象。
+  @param failure 当任务完成失败或成功完成但在解析响应数据时遇到错误时要执行的块对象。此块没有返回值，并采用两个参数：数据任务和描述网络的错误或发生的解析错误。
  */
 - (nullable NSURLSessionDataTask *)POST:(NSString *)URLString
                              parameters:(nullable id)parameters
@@ -194,10 +194,10 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  使用`PUT`请求创建并运行`NSURLSessionDataTask`。
  
-   @param URLString用于创建请求URL的URL字符串。
-   @param参数根据客户端请求序列化程序编码的参数。
-   @param success任务成功完成时要执行的块对象。 此块没有返回值，并且有两个参数：数据任务和客户端响应序列化程序创建的响应对象。
-   @param failure当任务完成失败或成功完成但在解析响应数据时遇到错误时要执行的块对象。 此块没有返回值，并采用两个参数：数据任务和描述网络的错误或发生的解析错误。
+   @param URLString 用于创建请求URL的URL字符串。
+   @param parameters 参数根据客户端请求序列化程序编码的参数。
+   @param success 任务成功完成时要执行的块对象。 此块没有返回值，并且有两个参数：数据任务和客户端响应序列化程序创建的响应对象。
+   @param failure 当任务完成失败或成功完成但在解析响应数据时遇到错误时要执行的块对象。 此块没有返回值，并采用两个参数：数据任务和描述网络的错误或发生的解析错误。
  */
 - (nullable NSURLSessionDataTask *)PUT:(NSString *)URLString
                    parameters:(nullable id)parameters
@@ -207,10 +207,10 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  使用`PATCH`请求创建并运行`NSURLSessionDataTask`。
  
-   @param URLString用于创建请求URL的URL字符串。
-   @param参数根据客户端请求序列化程序编码的参数。
-   @param success任务成功完成时要执行的块对象。 此块没有返回值，并且有两个参数：数据任务和客户端响应序列化程序创建的响应对象。
-   @param failure当任务完成失败或成功完成但在解析响应数据时遇到错误时要执行的块对象。 此块没有返回值，并采用两个参数：数据任务和描述网络的错误或发生的解析错误。
+   @param URLString 用于创建请求URL的URL字符串。
+   @param parameters 参数根据客户端请求序列化程序编码的参数。
+   @param success 任务成功完成时要执行的块对象。 此块没有返回值，并且有两个参数：数据任务和客户端响应序列化程序创建的响应对象。
+   @param failure 当任务完成失败或成功完成但在解析响应数据时遇到错误时要执行的块对象。 此块没有返回值，并采用两个参数：数据任务和描述网络的错误或发生的解析错误。
  */
 - (nullable NSURLSessionDataTask *)PATCH:(NSString *)URLString
                      parameters:(nullable id)parameters
@@ -220,10 +220,10 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  使用`DELETE`请求创建并运行`NSURLSessionDataTask`。
  
-   @param URLString用于创建请求URL的URL字符串。
-   @param参数根据客户端请求序列化程序编码的参数。
-   @param success任务成功完成时要执行的块对象。 此块没有返回值，并且有两个参数：数据任务和客户端响应序列化程序创建的响应对象。
-   @param failure当任务完成失败或成功完成但在解析响应数据时遇到错误时要执行的块对象。 此块没有返回值，并采用两个参数：数据任务和描述网络的错误或发生的解析错误。
+   @param URLString 用于创建请求URL的URL字符串。
+   @param parameters 参数根据客户端请求序列化程序编码的参数。
+   @param success 任务成功完成时要执行的块对象。 此块没有返回值，并且有两个参数：数据任务和客户端响应序列化程序创建的响应对象。
+   @param failure 当任务完成失败或成功完成但在解析响应数据时遇到错误时要执行的块对象。 此块没有返回值，并采用两个参数：数据任务和描述网络的错误或发生的解析错误。
  */
 - (nullable NSURLSessionDataTask *)DELETE:(NSString *)URLString
                       parameters:(nullable id)parameters

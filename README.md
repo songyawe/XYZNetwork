@@ -1,6 +1,96 @@
 # XYZNetwork
 XYZNetwork是基于AFNetworking封装实现的一个很实用的网络请求框架，包括了现实生产中实际用到的各种场景需求，可以断点下载和上传，网络请求方式可以使用缓存和网络缓存并用的方式。使用方便，使用时只需要将项目里的XYZRequest文件夹放入自己项目中即可使用。有Demo可以参考
+###使用Demo
+```
 
+//普通网络请求
+- (void)login {
+
+XYZCommonRequest *request = [XYZCommonRequest XYZ_requestWithUrl:@"/app/auth/signin" requestType:XYZRequestTypePOST];
+request.requestParames = @{
+@"client":@"primary",
+@"code":@"1614",
+@"mobile":@"15001389806"
+};
+[request sendRequestWithSuccess:^(__kindof XYZBaseRequest * _Nonnull request) {
+ResponseModel* model = [ResponseModel mj_objectWithKeyValues:request.responseJSONObject];
+NSLog(@"请求成功！");
+
+} failure:^(__kindof XYZBaseRequest * _Nonnull request) {
+NSLog(@"请求失败！");
+}];
+}
+
+//带缓存的网络请求
+- (void)cacheLogin{
+
+XYZCacheCommonRequest *request = [XYZCacheCommonRequest XYZ_requestWithUrl:@"/app/auth/signin" requestType:XYZRequestTypePOST useCacheType:XYZCacheTypeCACHEANDNET];
+request.requestParames = @{
+@"client":@"primary",
+@"code":@"1614",
+@"mobile":@"15001389806"
+};
+[request sendRequestWithSuccess:^(__kindof XYZBaseRequest * _Nonnull request) {
+ResponseModel* model = [ResponseModel mj_objectWithKeyValues:request.responseJSONObject];
+NSLog(@"请求成功！");
+
+} failure:^(__kindof XYZBaseRequest * _Nonnull request) {
+NSLog(@"请求失败！");
+}];
+}
+
+//一组相互依赖的网络请求
+- (void)group{
+NSMutableArray *group = [NSMutableArray array];
+for (int i = 0; i < 10; i ++) {
+XYZCommonRequest *request = [XYZCommonRequest XYZ_requestWithUrl:@"/app/auth/signin" requestType:XYZRequestTypePOST];
+request.tag = i;
+request.requestParames = @{
+@"client":@"primary",
+@"code":@"1614",
+@"mobile":@"15001389806"
+};
+[group addObject:request];
+}
+
+XYZGroupRequest *groupRequest = [[XYZGroupRequest alloc]initWithRequestArray:group];
+
+[groupRequest sendRequestWithProcess:^(XYZBaseRequest * _Nonnull processRequest , XYZGroupRequest *groupRequest) {
+NSLog(@"------本次成功请求的编号:---%ld--------",(long)processRequest.tag);
+NSLog(@"-----完成了第几个:----%ld--------",(long)groupRequest.finishedCount);
+} success:^(XYZGroupRequest * _Nonnull groupRequest) {
+NSLog(@"---------请求组成功完成任务,进行其他任务--------");
+
+} failure:^(XYZGroupRequest * _Nonnull groupRequest) {
+NSLog(@"---------失败,提示用户--------");
+}];
+
+}
+
+//断点下载
+
+- (void)downloadAction{
+[self.btn0 setEnabled:NO];
+__weak typeof(self)weakSelf = self;
+XYZDownloadRequest *download = [[XYZDownloadRequest alloc]init];
+download.downloadProgressBlock = ^(NSProgress * _Nonnull progress) {
+NSLog(@"--------%.2f------",progress.fractionCompleted);
+dispatch_async(dispatch_get_main_queue(), ^{
+[weakSelf.btn0 setTitle:[NSString stringWithFormat:@"下载进度:%.2f",progress.fractionCompleted] forState:(UIControlStateNormal)];
+});
+
+};
+[download sendRequestWithSuccess:^(__kindof XYZBaseRequest * _Nonnull request) {
+NSLog(@"下载成功！");
+[weakSelf.btn0 setEnabled:YES];
+[weakSelf.btn0 setTitle:@"下载成功，重新下载" forState:(UIControlStateNormal)];
+} failure:^(__kindof XYZBaseRequest * _Nonnull request) {
+[weakSelf.btn0 setEnabled:YES];
+NSLog(@"下载失败！");
+}];
+_download = download;
+}
+```
 
 ###XYZBaseRequest 网络请求基类
 ```

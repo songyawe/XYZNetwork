@@ -136,12 +136,12 @@ NS_ASSUME_NONNULL_BEGIN
 ///-------------------------------
 
 /**
- `completionBlock`的调度队列。 如果为“NULL”（默认值），则使用主队列。
+请求成功后，回调block会在这个队列中调用，如果为空，就在主队列。
  */
 @property (nonatomic, strong, nullable) dispatch_queue_t completionQueue;
 
 /**
-“completionBlock”的调度组。 如果为“NULL”（默认），则使用私有调度组。
+请求成功后，回调block会在这个组中调用，如果为空，就使用一个私有的
  */
 @property (nonatomic, strong, nullable) dispatch_group_t completionGroup;
 
@@ -150,9 +150,7 @@ NS_ASSUME_NONNULL_BEGIN
 ///---------------------------------
 
 /**
- 当初始调用返回“nil”时，是否尝试重试为后台会话创建上载任务。 “NO”默认情况下。
- 
-   @bug从iOS 7.0开始，有一个错误，即为后台任务创建的上传任务有时是“无”。 作为解决方法，如果此属性为“是”，AFNetworking将遵循Apple的建议再次尝试创建任务。
+ 这个属性用来解决在后台创建上传任务返回nil的bug，默认为NO，如果设为YES，在后台创建上传任务失败会，会尝试重新创建该任务。
  */
 @property (nonatomic, assign) BOOL attemptsToRecreateUploadTasksForBackgroundSessions;
 
@@ -170,7 +168,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithSessionConfiguration:(nullable NSURLSessionConfiguration *)configuration NS_DESIGNATED_INITIALIZER;
 
 /**
- 使托管会话无效，可选择取消挂起的任务。
+ 根据是否取消未完成的任务来是session失效
+ 
+ NSURLSession有两个方法：
+ -(void)finishTasksAndInvalidate; 标示待完成所有的任务后失效
+ -(void)invalidateAndCancel; 标示 立即失效，未完成的任务也将结束
  
    @param cancelPendingTasks是否取消挂起的任务。
  */

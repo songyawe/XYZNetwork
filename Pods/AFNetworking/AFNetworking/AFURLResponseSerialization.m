@@ -1,5 +1,4 @@
 // AFURLResponseSerialization.m
-// Copyright (c) 2011–2016 Alamofire Software Foundation ( http://alamofire.org/ )
 
 #import "AFURLResponseSerialization.h"
 
